@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PetCare AI - Empathetic Professionalism for your pets</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#cde5ff",
+                    "primary": "#074469",
+                    "surface-dim": "#dbdad7",
+                    "surface-container": "#efeeeb",
+                    "outline-variant": "#c1c7cf",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#d9e6da",
+                    "secondary": "#556158",
+                    "on-secondary-fixed-variant": "#3e4a41",
+                    "secondary-fixed-dim": "#bdcabe",
+                    "on-primary-fixed-variant": "#124a6f",
+                    "on-surface-variant": "#41474e",
+                    "surface-tint": "#316289",
+                    "on-background": "#1a1c1a",
+                    "on-tertiary-fixed-variant": "#2c5000",
+                    "on-error-container": "#93000a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#a5d4ff",
+                    "on-secondary-fixed": "#131e17",
+                    "surface-container-high": "#e9e8e5",
+                    "on-secondary-container": "#5b675e",
+                    "on-error": "#ffffff",
+                    "on-surface": "#1a1c1a",
+                    "inverse-on-surface": "#f2f1ee",
+                    "on-primary-fixed": "#001d32",
+                    "inverse-primary": "#9ccbf7",
+                    "surface-variant": "#e3e2e0",
+                    "surface": "#faf9f6",
+                    "background": "#faf9f6",
+                    "surface-container-highest": "#e3e2e0",
+                    "primary-fixed-dim": "#9ccbf7",
+                    "surface-bright": "#faf9f6",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#a5e069",
+                    "on-secondary": "#ffffff",
+                    "surface-container-low": "#f4f3f1",
+                    "tertiary-container": "#386300",
+                    "tertiary": "#284900",
+                    "on-tertiary-fixed": "#0e2000",
+                    "secondary-container": "#d9e6da",
+                    "outline": "#72787f",
+                    "primary-container": "#2a5c82",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#9dd761",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#b8f47a",
+                    "inverse-surface": "#2f312f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xxl": "48px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "container-max": "1200px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "xs": "4px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(7, 68, 105, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar from JSON -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-xl py-md max-w-container-max mx-auto bg-surface dark:bg-background shadow-sm transition-all duration-300">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">PetCare AI</span>
+</div>
+<nav class="hidden md:flex gap-lg items-center">
+<a class="text-on-surface-variant dark:text-outline-variant font-medium text-label-md font-label-md hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low transition-colors px-3 py-2 rounded-md" href="#">대시보드</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium text-label-md font-label-md hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low transition-colors px-3 py-2 rounded-md" href="#">채팅</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium text-label-md font-label-md hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low transition-colors px-3 py-2 rounded-md" href="#">반려동물 프로필</a>
+</nav>
+<button class="bg-error text-on-error px-md py-sm rounded-full text-label-md font-label-md flex items-center gap-xs hover:bg-error/90 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">emergency</span>
+            긴급 호출
+        </button>
+</header>
+<main class="flex-grow pt-[88px] pb-xxl">
+<!-- Hero Section -->
+<section class="relative w-full max-w-container-max mx-auto px-margin-mobile md:px-xl py-xl md:py-xxl flex flex-col md:flex-row items-center gap-xl min-h-[819px]">
+<div class="flex-1 flex flex-col items-start gap-md z-10">
+<div class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm font-label-sm mb-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">health_and_safety</span>
+<span>AI 기반 동물 의료 상담</span>
+</div>
+<h1 class="text-display-lg font-display-lg text-primary max-w-2xl leading-tight">
+                    우리 아이의 건강, <br/> <span class="text-surface-tint">우리의 최우선 과제.</span>
+</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-xl mt-sm mb-lg">
+                    즉각적인 AI 기반 상담 가이드와 전문가의 케어를 결합했습니다. 아이들이 아픈 곳을 말하지 못할 때, 저희가 대신 들어드리겠습니다.
+                </p>
+<div class="flex flex-col sm:flex-row gap-sm w-full sm:w-auto">
+<button class="bg-primary text-on-primary px-lg py-md rounded-lg text-label-md font-label-md flex items-center justify-center gap-sm hover:shadow-md transition-all active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+                        상담 시작하기
+                    </button>
+<button class="bg-secondary-container text-primary px-lg py-md rounded-lg text-label-md font-label-md flex items-center justify-center gap-sm hover:bg-secondary-fixed transition-all active:scale-95 border border-transparent hover:border-primary/20">
+<span class="material-symbols-outlined">calendar_today</span>
+                        진료 예약하기
+                    </button>
+</div>
+<div class="mt-xl flex items-center gap-md text-label-sm font-label-sm text-on-surface-variant">
+<div class="flex -space-x-2">
+<img alt="User" class="w-8 h-8 rounded-full border-2 border-surface" data-alt="A small circular portrait of a smiling pet owner holding a small dog. Bright lighting, professional photography style suitable for a UI avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFKDif3klE5dUCV3RQ4mi65bynxxhP2xZfOvEnomT0iMH-iDK8fbGiUgLS7NmzGBVCJlWe3eA1S_4XDmVzC0QAAeNaBIWPZ6b2nYOOtBpjW_ENU8K_9li9OyU6bp_lmI9NJz7zuKiu3hmffCnfwfOoO613UF9R5cFy_7K_UWb-wjYtrInEf8YbrOKf115zUL7MipZ8d-52Mw0CwrdpJRTxNTKKRHVOudloujEkgVwQy4wj1lcTXTVyWDsW5Jj9Q8Ww3C2HPLoT45g"/>
+<img alt="User" class="w-8 h-8 rounded-full border-2 border-surface" data-alt="A small circular portrait of a professional veterinarian in scrubs. Bright lighting, professional photography style suitable for a UI avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCndZVeaOW3fNpiBtvbO0WW7F0FbxxvMLfcI1sgnaZoNf0CMSNElHMmtlxZzJRoP5zMfhR394IJ_O8IsWLEsbEwDPu-Ef_rQmJd7mHDrvHbNKQmG0eRXnYlDi2QVlvXGKPB1GLG2KPB3ZIzfKqOd8S5JXuqtqrI8BKfiQEqPBGnsUr10E2SEXbFYsVC18YlVlWVAfA9oHCPIoSo8xxnZ-DcSEC5bgXJ7otvrSryrU-V9f0paUpb30LwEGE8dPyKQcJddxdRP-3-iq4"/>
+<img alt="User" class="w-8 h-8 rounded-full border-2 border-surface" data-alt="A small circular portrait of a happy cat. Bright lighting, professional photography style suitable for a UI avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwzBuJoN6BfBJ3HZTHcfrJ5eB_lgr-LPTBcMcJUt2-G1yXTAtvT6DNm40bGst-TzIw_0WV_6B_l1AFQ8tMplstbr3kUUZNKfpRFLVx8mbkUOAVgtWiREnFvzkLXA91KoXnJI5vzXzC3Ny9XVtwYoBNOgwI9-adyF-8unT4hJs7k-57gkomRsQyf5JAQMVdrzHBKYMQHvM449rv9S-WzwHgYQJYuMp84Teubsa_niA-8mHHxSBIywkriCR7_cDmFLgBJrle7V536nI"/>
+</div>
+<span>10,000명 이상의 보호자가 신뢰합니다.</span>
+</div>
+</div>
+<div class="flex-1 w-full relative">
+<div class="absolute inset-0 bg-primary-fixed rounded-[2rem] transform rotate-3 scale-105 opacity-50 z-0"></div>
+<img alt="Veterinarian with dog" class="relative z-10 w-full h-auto object-cover rounded-[2rem] shadow-lg border-4 border-surface" data-alt="A professional, compassionate veterinarian smiling while examining a friendly Golden Retriever in a clean, modern clinic. Soft, warm natural light filters through a window, creating a calm and reassuring mood. The clinical setting is offset by organic shapes and a comforting palette of warm neutrals and soft blues, aligning with the 'Empathetic Professionalism' brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdv83eHhbFfYpy8Bn7XLEboBH7bxBIBfcqCeAOW-bmqqB9DiQ3ynJjrIAiyXazw_-fCDSZl6hqrtZnaMvllGQTQAwELeRelSXxaJlnS_r0H3UTGChbMwnPd4jE_E3SOYup1h7U9ubRekPX1JIX3q-vABKgNW8Xgy79g9xTmLKxmlOYGqtUunrLt6ptGCboQgkwYaM-GX94oRp-nAz03Ms9wCnyLNSo_CsBn3U9N7eK-OSqcwYk-_yNHcVcJOXPrJfXiwCEUTESrNs"/>
+<!-- Floating Glass Card UI Element -->
+<div class="absolute -left-md top-1/4 z-20 glass-card rounded-xl p-md flex items-center gap-sm animate-bounce" style="animation-duration: 3s;">
+<div class="bg-secondary-container p-sm rounded-full text-tertiary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">Triage Complete</div>
+<div class="text-label-md font-label-md text-primary font-bold">Mild Concern</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-xl py-xxl">
+<div class="text-center mb-xl">
+<h2 class="text-headline-lg font-headline-lg text-primary mb-sm">종합 케어 툴킷</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-2xl mx-auto">전문적인 알고리즘과 인간의 공감을 통해 반려동물의 건강을 관리하는 데 필요한 모든 것을 제공합니다.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Feature 1: AI Assistant (Spans 2 cols on tablet/desktop) -->
+<div class="md:col-span-2 bg-surface-container-low rounded-[1.5rem] p-lg md:p-xl border border-surface-variant hover:shadow-sm transition-shadow relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-64 h-64 bg-primary-fixed-dim rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+<div class="relative z-10">
+<div class="w-12 h-12 bg-primary text-on-primary rounded-xl flex items-center justify-center mb-md shadow-sm">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<h3 class="text-headline-md font-headline-md text-primary mb-sm">24시간 AI 상담 어시스턴트</h3>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-md">언제 어디서나 증상을 즉시 분석합니다. 임상 상담 프로토콜을 반영하여 불안한 순간에 명확한 가이드를 제공합니다.</p>
+</div>
+<div class="mt-lg border-t-2 border-primary/10 pt-md">
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-surface rounded-full text-label-sm font-label-sm text-primary border border-primary/20">구토</span>
+<span class="px-3 py-1 bg-surface rounded-full text-label-sm font-label-sm text-primary border border-primary/20">무기력</span>
+<span class="px-3 py-1 bg-surface rounded-full text-label-sm font-label-sm text-primary border border-primary/20">절뚝거림</span>
+</div>
+</div>
+</div>
+<!-- Feature 2: Expert Connection -->
+<div class="bg-surface-container-low rounded-[1.5rem] p-lg border border-surface-variant hover:shadow-sm transition-shadow relative overflow-hidden group">
+<div class="absolute bottom-0 right-0 w-48 h-48 bg-secondary-fixed rounded-full blur-2xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+<div class="relative z-10">
+<div class="w-12 h-12 bg-secondary-container text-primary rounded-xl flex items-center justify-center mb-md shadow-sm">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">video_camera_front</span>
+</div>
+<h3 class="text-headline-md font-headline-md text-primary mb-sm">전문 수의사 연결</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">필요 시 텍스트, 전화, 화상 통화를 통해 공인 수의사에게 즉시 연결됩니다.</p>
+</div>
+</div>
+<!-- Feature 3: Health Tracking -->
+<div class="md:col-span-3 bg-primary text-on-primary rounded-[1.5rem] p-lg md:p-xl flex flex-col md:flex-row items-center gap-xl relative overflow-hidden">
+<div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
+<div class="flex-1 relative z-10">
+<div class="inline-flex items-center gap-2 bg-on-primary/10 px-3 py-1 rounded-full text-label-sm font-label-sm mb-4">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">monitor_heart</span>
+<span>선제적 케어</span>
+</div>
+<h3 class="text-headline-lg font-headline-lg text-on-primary mb-sm">종합 건강 기록 관리</h3>
+<p class="text-body-lg font-body-lg text-on-primary/80 mb-md max-w-xl">모든 진료 기록, 예방접종 일정, 식단 정보를 한 곳에서 관리하세요. 건강 상태를 보호자와 병원이 함께 공유할 수 있습니다.</p>
+<button class="bg-surface text-primary px-lg py-md rounded-lg text-label-md font-label-md hover:bg-surface-container-low transition-colors inline-flex items-center gap-2">
+                            프로필 기능 둘러보기
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="flex-1 relative z-10 w-full max-w-md bg-surface rounded-xl p-md shadow-lg text-on-surface">
+<div class="flex items-center justify-between mb-sm border-b-2 border-primary/10 pb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="text-label-md font-label-md font-bold">벨라의 건강 요약</span>
+</div>
+<span class="text-label-sm font-label-sm text-secondary">오늘 업데이트됨</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded-lg">
+<span class="text-body-md font-body-md">광견병 예방접종</span>
+<span class="text-label-sm font-label-sm text-tertiary bg-tertiary-container/20 px-2 py-1 rounded">접종 완료</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded-lg">
+<span class="text-body-md font-body-md">체중 변화 추이</span>
+<span class="text-label-sm font-label-sm text-primary flex items-center"><span class="material-symbols-outlined text-sm">trending_flat</span> 안정적</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer from JSON -->
+<footer class="bg-surface-container dark:bg-surface-container-lowest border-t border-outline-variant w-full py-xl px-margin-mobile md:px-xl flex flex-col md:flex-row justify-between items-center gap-lg">
+<div class="flex items-center gap-sm text-headline-sm font-headline-sm text-secondary dark:text-secondary-fixed">
+<span class="material-symbols-outlined text-2xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span>PetCare AI</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant dark:text-outline-variant text-center md:text-left">
+            © 2024 PetCare AI. 반려동물을 위한 공감 어린 전문 케어.
+        </p>
+<div class="flex flex-wrap justify-center gap-md">
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-outline-variant hover:underline hover:text-primary transition-all" href="#">개인정보처리방침</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-outline-variant hover:underline hover:text-primary transition-all" href="#">이용약관</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-outline-variant hover:underline hover:text-primary transition-all" href="#">고객 지원</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-outline-variant hover:underline hover:text-primary transition-all" href="#">협력 동물병원</a>
+</div>
+</footer>
+</body></html>

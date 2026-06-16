@@ -1,0 +1,25 @@
+name: Feature
+description: 사용자 가치가 있는 기능 제안
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 문제
+      description: 누가 어떤 상황에서 무엇 때문에 어려운가요?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 수용 기준
+      description: 완료 여부를 검증 가능한 항목으로 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: 데이터·보안 영향
+      description: 민감 데이터, 외부 전송, 권한, 비용 영향이 있나요?
+

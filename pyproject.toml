@@ -1,0 +1,67 @@
+[project]
+name = "docqa-lab"
+version = "0.1.0"
+description = "Evidence-grounded Q&A over internal and external documents"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "openai>=2.0,<3",
+    "pydantic-settings>=2.7,<3",
+    "uvicorn[standard]>=0.34,<1",
+]
+
+[project.optional-dependencies]
+ui = [
+    "httpx>=0.28,<1",
+    "streamlit>=1.45,<2",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28,<1",
+    "mypy>=1.15,<2",
+    "pre-commit>=4.2,<5",
+    "pytest>=8.3,<9",
+    "pytest-cov>=6,<7",
+    "ruff>=0.11,<1",
+]
+
+[project.scripts]
+docqa-api = "docqa.api.main:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/docqa"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["docqa"]
+
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers --cov=docqa --cov-report=term-missing"
+testpaths = ["tests"]
+markers = [
+    "integration: tests requiring local services",
+    "external: tests requiring network or paid providers",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["docqa"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 70

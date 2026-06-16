@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PetCare AI - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#cde5ff",
+                      "primary": "#074469",
+                      "surface-dim": "#dbdad7",
+                      "surface-container": "#efeeeb",
+                      "outline-variant": "#c1c7cf",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#d9e6da",
+                      "secondary": "#556158",
+                      "on-secondary-fixed-variant": "#3e4a41",
+                      "secondary-fixed-dim": "#bdcabe",
+                      "on-primary-fixed-variant": "#124a6f",
+                      "on-surface-variant": "#41474e",
+                      "surface-tint": "#316289",
+                      "on-background": "#1a1c1a",
+                      "on-tertiary-fixed-variant": "#2c5000",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-container": "#a5d4ff",
+                      "on-secondary-fixed": "#131e17",
+                      "surface-container-high": "#e9e8e5",
+                      "on-secondary-container": "#5b675e",
+                      "on-error": "#ffffff",
+                      "on-surface": "#1a1c1a",
+                      "inverse-on-surface": "#f2f1ee",
+                      "on-primary-fixed": "#001d32",
+                      "inverse-primary": "#9ccbf7",
+                      "surface-variant": "#e3e2e0",
+                      "surface": "#faf9f6",
+                      "background": "#faf9f6",
+                      "surface-container-highest": "#e3e2e0",
+                      "primary-fixed-dim": "#9ccbf7",
+                      "surface-bright": "#faf9f6",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-container": "#a5e069",
+                      "on-secondary": "#ffffff",
+                      "surface-container-low": "#f4f3f1",
+                      "tertiary-container": "#386300",
+                      "tertiary": "#284900",
+                      "on-tertiary-fixed": "#0e2000",
+                      "secondary-container": "#d9e6da",
+                      "outline": "#72787f",
+                      "primary-container": "#2a5c82",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed-dim": "#9dd761",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed": "#b8f47a",
+                      "inverse-surface": "#2f312f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xxl": "48px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "container-max": "1200px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "xs": "4px",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "display-lg": ["Plus Jakarta Sans"],
+                      "label-sm": ["Inter"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { background-color: #faf9f6; }
+        .shadow-soft { box-shadow: 0px 4px 20px rgba(42, 92, 130, 0.08); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col">
+<!-- TopNavBar (From JSON) -->
+<nav class="bg-surface dark:bg-background text-primary dark:text-primary-fixed-dim font-headline-md text-headline-md docked full-width top-0 bg-surface dark:bg-background shadow-sm shadow-sm fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-xl py-md max-w-container-max mx-auto">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim tracking-tight font-extrabold">PetCare AI</span>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary dark:border-primary-fixed-dim pb-1 font-label-md text-label-md hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low transition-colors px-2 py-1 rounded" href="#">대시보드</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium font-label-md text-label-md hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low transition-colors px-2 py-1 rounded" href="#">채팅</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium font-label-md text-label-md hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-low transition-colors px-2 py-1 rounded" href="#">반려동물 프로필</a>
+</div>
+<button class="bg-error text-on-error px-md py-sm rounded-full font-label-md text-label-md hover:scale-95 duration-150 transition-transform shadow-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm">emergency</span>
+            긴급 호출
+        </button>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow pt-[88px] px-margin-mobile md:px-xl max-w-container-max mx-auto w-full pb-xxl">
+<!-- Header -->
+<header class="mb-xl mt-lg">
+<h1 class="text-headline-lg font-headline-lg text-on-surface mb-xs">반갑습니다, Sarah님</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant">반려동물의 건강 상태를 한눈에 확인하세요.</p>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Pet Cards (Left Col - 4 span) -->
+<div class="md:col-span-4 flex flex-col gap-md">
+<!-- Pet 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-md border-t-2 border-primary relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform">
+<div class="flex items-center gap-md mb-sm">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-fixed bg-surface-container-low flex items-center justify-center">
+<img alt="Bella" class="w-full h-full object-cover" data-alt="A close-up portrait of a friendly Golden Retriever dog looking attentive. The setting is bright and cheerful with soft, natural daylight illuminating the dog's golden fur. The background is slightly blurred, focusing entirely on the pet's warm expression. The overall style is modern, high-quality, and empathetic, aligning with a professional pet care aesthetic using a bright, airy light-mode feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACyhdaGHCc-TwvQn6RtYbW4zOmGSGKaYqqiJxu7CzYNMOXtV7urU5QkBsPxp6hfGaXCotJiNw8nCnFPdL1M7q9MislFg8awpLnvGwBV2wMiUEfa6IvG-0pjFrrhBUQVMvkP-kQGwSZ7J_rCsdJMmQHRcQPnoaYhmbeLNGiNotv6CRLS_zQUI0FoV9akQKfnN9lt1QG3mQvjOYhfA4h4lXl92VW_-fm3PGVlaGblZlEnm8yf019xCq0-BRV1lx18PPfQU_zuMHP6gE"/>
+</div>
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface text-xl">Bella</h2>
+<p class="text-label-md font-label-md text-on-surface-variant">골든 리트리버, 4세</p>
+</div>
+</div>
+<div class="flex justify-between items-center bg-secondary-fixed/30 p-sm rounded-lg">
+<span class="text-label-sm font-label-sm text-secondary">상태</span>
+<span class="text-label-sm font-label-sm text-primary font-bold bg-primary-fixed px-2 py-1 rounded">건강함</span>
+</div>
+</div>
+<!-- Pet 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-md border-t-2 border-outline-variant relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform opacity-90">
+<div class="flex items-center gap-md mb-sm">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-surface-variant bg-surface-container-low flex items-center justify-center">
+<img alt="Max" class="w-full h-full object-cover" data-alt="A portrait of an orange tabby cat sitting calmly indoors. The lighting is soft and diffused, creating a serene and domestic mood. The background is a clean, minimal interior space, emphasizing the cat's features. The image embodies a modern, warm, and professional light-mode aesthetic suitable for a reliable pet care application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCz4lWf4CbWjOXO8s9Er6XDF4Q6TjA-BltGVWqJFQPkPROklLPkb9EucN515YyLoqwi2lgoY4BkqthMccPfv7nZU-9XODa42Dn0VBfLtkcDi63wgkyKz3R44tDt6CYdnCYuEetCji8CUDXg09ED4tzWt25NfePw6jNri4-3MlXsxQQpsJ4DEQuz5b5rNT8qatr2SjX7mXdvqzaWbbWjpy3kgtD6IIuhmiFkHqPHhYDX9oPwJ7YToZ1nBMyQKNPAPxhfLmqW3PlYU48"/>
+</div>
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface text-xl">Max</h2>
+<p class="text-label-md font-label-md text-on-surface-variant">태비 고양이, 2세</p>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container-low p-sm rounded-lg">
+<span class="text-label-sm font-label-sm text-on-surface-variant">상태</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant px-2 py-1 rounded border border-outline-variant">업데이트 필요</span>
+</div>
+</div>
+<!-- Add Pet -->
+<button class="bg-surface-container border border-dashed border-outline-variant rounded-xl p-md flex items-center justify-center gap-sm text-primary hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="text-label-md font-label-md font-bold">반려동물 추가</span>
+</button>
+</div>
+<!-- Main Stats & Chart (Middle Col - 8 span) -->
+<div class="md:col-span-8 flex flex-col gap-md">
+<!-- Quick Stats Row -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-sm">
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-sm flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-xs">monitor_weight</span>
+<span class="text-body-md font-body-md text-on-surface-variant">벨라 체중</span>
+<span class="text-headline-md font-headline-md text-primary">65 lbs</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-sm flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-secondary mb-xs">vaccines</span>
+<span class="text-body-md font-body-md text-on-surface-variant">다음 예방접종</span>
+<span class="text-label-md font-label-md text-on-surface font-bold">10월 12일</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-sm flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-xs">chat</span>
+<span class="text-body-md font-body-md text-on-surface-variant">상담 횟수</span>
+<span class="text-headline-md font-headline-md text-primary">3</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-sm flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-secondary mb-xs">calendar_month</span>
+<span class="text-body-md font-body-md text-on-surface-variant">건강검진</span>
+<span class="text-label-md font-label-md text-on-surface font-bold">11월 01일</span>
+</div>
+</div>
+<!-- Chart Area -->
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-lg border-t-2 border-primary flex-grow">
+<div class="flex justify-between items-center mb-md">
+<h3 class="text-headline-md font-headline-md text-on-surface text-lg">체중 변화 추이</h3>
+<select class="bg-surface-container-low border-none rounded-lg text-label-sm font-label-sm text-on-surface-variant focus:ring-2 focus:ring-primary h-8 py-0">
+<option>최근 6개월</option>
+<option>최근 1년</option>
+</select>
+</div>
+<!-- Faux Chart Graphic -->
+<div class="w-full h-48 bg-surface-container-low rounded-lg relative overflow-hidden flex items-end px-4 pb-4 gap-4">
+<!-- Simulated Line Chart with SVG -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M0,80 Q20,75 40,60 T80,40 T100,30 L100,100 L0,100 Z" fill="#cde5ff" opacity="0.4"></path>
+<path d="M0,80 Q20,75 40,60 T80,40 T100,30" fill="none" stroke="#074469" stroke-width="2"></path>
+<!-- Data points -->
+<circle cx="20" cy="72" fill="#074469" r="2"></circle>
+<circle cx="40" cy="60" fill="#074469" r="2"></circle>
+<circle cx="60" cy="48" fill="#074469" r="2"></circle>
+<circle cx="80" cy="40" fill="#074469" r="2"></circle>
+<circle cx="100" cy="30" fill="#074469" r="2"></circle>
+</svg>
+<!-- Axis Labels -->
+<div class="absolute bottom-1 left-4 w-full flex justify-between pr-8 text-[10px] text-outline">
+<span>5월</span><span>6월</span><span>7월</span><span>8월</span><span>9월</span><span>10월</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Row (Full Width) -->
+<div class="md:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-gutter mt-sm">
+<!-- Upcoming Reminders -->
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-md">
+<h3 class="text-headline-md font-headline-md text-on-surface text-lg mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary">notifications</span>
+                        예정된 일정
+                    </h3>
+<ul class="space-y-sm">
+<li class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-body-md font-body-md text-on-surface">벨라 - 광견병 예방접종</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container px-2 py-1 rounded">3일 후</span>
+</li>
+<li class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-body-md font-body-md text-on-surface">맥스 - 외부 기생충 예방</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container px-2 py-1 rounded">2주 후</span>
+</li>
+</ul>
+</div>
+<!-- Recent Chat Summaries -->
+<div class="bg-surface-container-lowest rounded-xl shadow-soft p-md">
+<h3 class="text-headline-md font-headline-md text-on-surface text-lg mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary">history</span>
+                        최근 상담 기록
+                    </h3>
+<div class="space-y-sm">
+<!-- Triage Item -->
+<a class="block p-sm border border-outline-variant rounded-lg hover:border-primary transition-colors bg-surface-bright" href="#">
+<div class="flex justify-between items-start mb-xs">
+<span class="text-label-md font-label-md font-bold text-primary">벨라: 오른쪽 앞발을 절음</span>
+<span class="text-label-sm font-label-sm text-outline">10월 05일</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant text-sm truncate">24시간 관찰 권장. 부기 증상 없음...</p>
+<div class="mt-xs flex gap-xs">
+<span class="text-[10px] uppercase font-bold text-secondary bg-secondary-fixed/50 px-1.5 py-0.5 rounded">긴급도 낮음</span>
+</div>
+</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer (From JSON) -->
+<footer class="bg-surface-container dark:bg-surface-container-lowest text-secondary dark:text-secondary-fixed w-full py-xl px-margin-mobile md:px-xl flex flex-col md:flex-row justify-between items-center gap-lg border-t border-outline-variant mt-auto">
+<div class="text-headline-sm font-headline-sm text-secondary dark:text-secondary-fixed font-bold">PetCare AI</div>
+<div class="flex flex-wrap justify-center gap-md">
+<a class="text-on-surface-variant dark:text-outline-variant font-label-sm text-label-sm hover:underline hover:text-primary transition-all" href="#">개인정보처리방침</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-label-sm text-label-sm hover:underline hover:text-primary transition-all" href="#">이용약관</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-label-sm text-label-sm hover:underline hover:text-primary transition-all" href="#">고객 지원</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-label-sm text-label-sm hover:underline hover:text-primary transition-all" href="#">협력 동물병원</a>
+</div>
+<div class="text-body-md font-body-md text-on-surface-variant text-sm">
+            © 2024 PetCare AI. 반려동물을 위한 공감 어린 전문 케어.
+        </div>
+</footer>
+</body></html>

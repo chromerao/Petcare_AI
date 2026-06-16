@@ -1,0 +1,117 @@
+<!doctype html>
+<html class="light" lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PetCare AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed": "#cde5ff",
+              primary: "#074469",
+              "surface-dim": "#dbdad7",
+              "surface-container": "#efeeeb",
+              "outline-variant": "#c1c7cf",
+              error: "#ba1a1a",
+              "secondary-fixed": "#d9e6da",
+              secondary: "#556158",
+              "on-secondary-fixed-variant": "#3e4a41",
+              "secondary-fixed-dim": "#bdcabe",
+              "on-primary-fixed-variant": "#124a6f",
+              "on-surface-variant": "#41474e",
+              "surface-tint": "#316289",
+              "on-background": "#1a1c1a",
+              "on-tertiary-fixed-variant": "#2c5000",
+              "on-error-container": "#93000a",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-container": "#a5d4ff",
+              "on-secondary-fixed": "#131e17",
+              "surface-container-high": "#e9e8e5",
+              "on-secondary-container": "#5b675e",
+              "on-error": "#ffffff",
+              "on-surface": "#1a1c1a",
+              "inverse-on-surface": "#f2f1ee",
+              "on-primary-fixed": "#001d32",
+              "inverse-primary": "#9ccbf7",
+              "surface-variant": "#e3e2e0",
+              surface: "#faf9f6",
+              background: "#faf9f6",
+              "surface-container-highest": "#e3e2e0",
+              "primary-fixed-dim": "#9ccbf7",
+              "surface-bright": "#faf9f6",
+              "error-container": "#ffdad6",
+              "on-tertiary-container": "#a5e069",
+              "on-secondary": "#ffffff",
+              "surface-container-low": "#f4f3f1",
+              "tertiary-container": "#386300",
+              tertiary: "#284900",
+              "on-tertiary-fixed": "#0e2000",
+              "secondary-container": "#d9e6da",
+              outline: "#72787f",
+              "primary-container": "#2a5c82",
+              "on-tertiary": "#ffffff",
+              "tertiary-fixed-dim": "#9dd761",
+              "on-primary": "#ffffff",
+              "tertiary-fixed": "#b8f47a",
+              "inverse-surface": "#2f312f"
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px"
+            },
+            spacing: {
+              xxl: "48px",
+              xl: "32px",
+              lg: "24px",
+              "container-max": "1200px",
+              md: "16px",
+              sm: "8px",
+              "margin-mobile": "16px",
+              gutter: "24px",
+              xs: "4px",
+              base: "4px"
+            },
+            fontFamily: {
+              "body-lg": ["Inter"],
+              "label-md": ["Inter"],
+              "headline-md": ["Plus Jakarta Sans"],
+              "display-lg": ["Plus Jakarta Sans"],
+              "label-sm": ["Inter"],
+              "headline-lg": ["Plus Jakarta Sans"],
+              "headline-lg-mobile": ["Plus Jakarta Sans"],
+              "body-md": ["Inter"]
+            },
+            fontSize: {
+              "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+              "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500" }],
+              "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+              "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+              "label-sm": ["12px", { lineHeight: "16px", fontWeight: "600" }],
+              "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
+              "headline-lg-mobile": ["28px", { lineHeight: "36px", fontWeight: "600" }],
+              "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }]
+            }
+          }
+        }
+      };
+    </script>
+  </head>
+  <body class="flex flex-col h-screen overflow-hidden text-on-surface">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
