@@ -1,6 +1,9 @@
 import type { GenerationMode, HealthResponse, QueryResponse, SourceCatalogResponse } from "./types";
 
-const API_BASE_URL = import.meta.env.VITE_DOCQA_API_BASE_URL ?? "http://127.0.0.1:8000";
+const API_BASE_URL = (import.meta.env.VITE_DOCQA_API_BASE_URL ?? "http://127.0.0.1:8000").replace(
+  /\/+$/,
+  "",
+);
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
