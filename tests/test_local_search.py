@@ -38,3 +38,36 @@ def test_retriever_applies_acl_filter() -> None:
     results = retriever.search("입실 확인", context, limit=3)
 
     assert all(not result.document_id.startswith("internal.") for result in results)
+
+
+def test_retriever_finds_cat_urinary_care_document() -> None:
+    retriever = LocalKeywordRetriever()
+    context = SearchContext(
+        user_id="test-user",
+        tenant_id="test-tenant",
+        allowed_acl=("public",),
+    )
+
+    results = retriever.search(
+        "고양이가 화장실을 자주 가는데 소변이 거의 안 나와요",
+        context,
+        limit=3,
+    )
+
+    assert results
+    assert results[0].document_id == "care.08_cat_urinary_litterbox"
+    assert results[0].source_url is not None
+
+
+def test_retriever_finds_vet_visit_preparation_document() -> None:
+    retriever = LocalKeywordRetriever()
+    context = SearchContext(
+        user_id="test-user",
+        tenant_id="test-tenant",
+        allowed_acl=("public",),
+    )
+
+    results = retriever.search("동물병원 가기 전에 어떤 증상을 기록해야 해?", context, limit=3)
+
+    assert results
+    assert results[0].document_id == "care.10_vet_visit_preparation"

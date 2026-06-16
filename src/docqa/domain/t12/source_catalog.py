@@ -137,6 +137,28 @@ T12_SOURCES: tuple[RegulationSource, ...] = (
         ingestion_status="metadata_verified",
         notes="예방관리와 동물병원 상담 준비에 활용하는 보호자용 자료.",
     ),
+    RegulationSource(
+        source_id="guide.cdc_healthy_pets",
+        title="Ways to Stay Healthy Around Animals",
+        publisher="U.S. Centers for Disease Control and Prevention",
+        source_kind="public_health_guide",
+        authority_level="official_guidance",
+        url="https://www.cdc.gov/healthy-pets/about/index.html",
+        checked_on=date(2026, 6, 16),
+        ingestion_status="metadata_verified",
+        notes="사람-동물 공통 감염 예방, 손 씻기, 생활 위생, 재난·여행 안전 참고 출처.",
+    ),
+    RegulationSource(
+        source_id="guide.cornell_feline_lutd",
+        title="Feline Lower Urinary Tract Disease",
+        publisher="Cornell University College of Veterinary Medicine",
+        source_kind="veterinary_public_guide",
+        authority_level="expert_guidance",
+        url="https://www.vet.cornell.edu/departments-centers-and-institutes/cornell-feline-health-center/health-information/feline-health-topics/feline-lower-urinary-tract-disease",
+        checked_on=date(2026, 6, 16),
+        ingestion_status="metadata_verified",
+        notes="고양이 배뇨 문제, 화장실 문제, 요도 폐색 응급 신호 참고 출처.",
+    ),
 )
 
 

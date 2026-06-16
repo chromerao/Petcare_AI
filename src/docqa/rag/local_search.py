@@ -117,6 +117,14 @@ def _parse_metadata(lines: list[str]) -> tuple[str, ...]:
     return ("public",)
 
 
+def _parse_source_url(lines: list[str]) -> str | None:
+    for line in lines[:8]:
+        if "Source:" in line:
+            source_url = line.split("Source:", maxsplit=1)[1].strip().strip("> ")
+            return source_url or None
+    return None
+
+
 def _document_id(path: Path) -> str:
     if path.parent.name == "t12_internal":
         return f"internal.{path.stem}"
@@ -156,6 +164,7 @@ def _append_markdown_section(
     locator: str,
     lines: list[str],
     acl: tuple[str, ...],
+    source_url: str | None,
     section_number: int,
 ) -> None:
     text = "\n".join(lines).strip()
@@ -170,6 +179,7 @@ def _append_markdown_section(
             locator=locator,
             text=text,
             acl=acl,
+            source_url=source_url,
         )
     )
 
@@ -183,6 +193,7 @@ def load_markdown_chunks(document_dir: Path = DEFAULT_SAMPLE_DIR) -> tuple[Index
         lines = path.read_text(encoding="utf-8").splitlines()
         title = next((line[2:].strip() for line in lines if line.startswith("# ")), path.stem)
         acl = _parse_metadata(lines)
+        source_url = _parse_source_url(lines)
         section_title = "문서 개요"
         section_lines: list[str] = []
         section_number = 0
@@ -197,6 +208,7 @@ def load_markdown_chunks(document_dir: Path = DEFAULT_SAMPLE_DIR) -> tuple[Index
                     locator=section_title,
                     lines=section_lines,
                     acl=acl,
+                    source_url=source_url,
                     section_number=section_number,
                 )
                 section_title = line[3:].strip()
@@ -212,6 +224,7 @@ def load_markdown_chunks(document_dir: Path = DEFAULT_SAMPLE_DIR) -> tuple[Index
             locator=section_title,
             lines=section_lines,
             acl=acl,
+            source_url=source_url,
             section_number=section_number,
         )
 
