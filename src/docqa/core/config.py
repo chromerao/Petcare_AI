@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     openai_store: bool = False
     llm_max_input_characters: int = Field(default=24_000, ge=1000, le=100_000)
     database_url: SecretStr | None = Field(default=None, repr=False)
+    supabase_url: str | None = None
+    supabase_publishable_key: SecretStr | None = Field(default=None, repr=False)
     supabase_jwt_secret: SecretStr | None = Field(default=None, repr=False)
 
     @property
@@ -44,9 +46,16 @@ class Settings(BaseSettings):
 
     @property
     def supabase_auth_configured(self) -> bool:
-        return self.supabase_jwt_secret is not None and bool(
-            self.supabase_jwt_secret.get_secret_value()
+        jwt_secret_configured = self.supabase_jwt_secret is not None and bool(
+            self.supabase_jwt_secret.get_secret_value(),
         )
+        remote_auth_configured = (
+            self.supabase_url is not None
+            and bool(self.supabase_url)
+            and self.supabase_publishable_key is not None
+            and bool(self.supabase_publishable_key.get_secret_value())
+        )
+        return jwt_secret_configured or remote_auth_configured
 
     @property
     def cors_origins(self) -> list[str]:

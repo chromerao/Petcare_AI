@@ -1324,7 +1324,7 @@ function App() {
           setPets(fallbackPets);
           setMessages(loadStoredMessages(userId));
           setSelectedPetId(fallbackPets[0]?.id ?? "bella");
-          setError(caught instanceof Error ? caught.message : "사용자 데이터를 불러오지 못했습니다.");
+          console.warn("User data sync failed; using local fallback.", caught);
         }
       }
     }

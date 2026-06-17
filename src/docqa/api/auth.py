@@ -1,5 +1,6 @@
 from typing import Annotated
 
+import httpx
 import jwt
 from fastapi import Depends, Header, HTTPException, status
 
@@ -12,12 +13,12 @@ def get_current_user_id(
 ) -> str:
     if settings is None:
         settings = get_settings()
-    if not settings.supabase_auth_configured or settings.supabase_jwt_secret is None:
+    if not settings.supabase_auth_configured:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail={
                 "code": "auth_not_configured",
-                "message": "Supabase JWT secret is not configured.",
+                "message": "Supabase authentication is not configured.",
             },
         )
     if not authorization or not authorization.startswith("Bearer "):
@@ -27,6 +28,20 @@ def get_current_user_id(
         )
 
     token = authorization.removeprefix("Bearer ").strip()
+    subject = _decode_subject_with_jwt_secret(token, settings)
+    if subject is None:
+        subject = _fetch_subject_from_supabase(token, settings)
+    if subject is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"code": "invalid_token", "message": "Invalid authentication token."},
+        )
+    return subject
+
+
+def _decode_subject_with_jwt_secret(token: str, settings: Settings) -> str | None:
+    if settings.supabase_jwt_secret is None:
+        return None
     try:
         payload = jwt.decode(
             token,
@@ -34,16 +49,33 @@ def get_current_user_id(
             algorithms=["HS256"],
             audience="authenticated",
         )
-    except jwt.PyJWTError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"code": "invalid_token", "message": "Invalid authentication token."},
-        ) from exc
+    except jwt.PyJWTError:
+        return None
 
     subject = payload.get("sub")
-    if not isinstance(subject, str) or not subject:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"code": "invalid_token", "message": "Authentication token has no subject."},
+    return subject if isinstance(subject, str) and subject else None
+
+
+def _fetch_subject_from_supabase(token: str, settings: Settings) -> str | None:
+    if settings.supabase_url is None or settings.supabase_publishable_key is None:
+        return None
+
+    base_url = settings.supabase_url.rstrip("/")
+    try:
+        response = httpx.get(
+            f"{base_url}/auth/v1/user",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "apikey": settings.supabase_publishable_key.get_secret_value(),
+            },
+            timeout=5.0,
         )
-    return subject
+    except httpx.HTTPError:
+        return None
+
+    if response.status_code != status.HTTP_200_OK:
+        return None
+
+    payload = response.json()
+    subject = payload.get("id")
+    return subject if isinstance(subject, str) and subject else None

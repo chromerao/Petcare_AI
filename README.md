@@ -101,10 +101,12 @@ Render 백엔드 환경변수:
 
 ```env
 DATABASE_URL=postgresql://...
+DOCQA_SUPABASE_URL=https://your-project.supabase.co
+DOCQA_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 DOCQA_SUPABASE_JWT_SECRET=...
 ```
 
-`DATABASE_URL`과 `DOCQA_SUPABASE_JWT_SECRET`은 절대 Vercel이나 브라우저 코드에 넣지 마세요.
+`DATABASE_URL`과 `DOCQA_SUPABASE_JWT_SECRET`은 절대 Vercel이나 브라우저 코드에 넣지 마세요. Render에는 JWT secret 검증을 우선 사용하고, Supabase URL/publishable key는 토큰 검증 fallback에 사용합니다.
 
 ## 개발 명령
 
