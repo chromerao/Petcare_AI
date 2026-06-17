@@ -35,6 +35,7 @@
 | 패키지/환경 | uv | 빠른 재현과 lockfile 관리 |
 | 테스트/품질 | pytest, Ruff, mypy | CI에서 자동 검사 |
 | 저장소 | 미정 | 로컬/pgvector/관리형 벡터 DB를 ADR로 결정 |
+| 사용자 데이터 | Supabase Auth + Postgres | 로그인 사용자의 반려동물 프로필과 상담 내역 저장 |
 | LLM | OpenAI `gpt-4.1-mini` | 개발 기준선, Responses API, 800 출력토큰 상한 |
 | 임베딩 | 미정 | 검색 기준선 측정 후 ADR로 결정 |
 
@@ -82,6 +83,28 @@ uv run --extra ui streamlit run ui/app.py
 AI 일반 조언은 실제 수의사의 진단·처방·약물 용량 지시를 대신하지 않습니다. 독성 섭취, 호흡곤란, 발작, 의식 저하, 반복 구토/설사, 심한 통증은 즉시 동물병원 또는 응급병원 상담으로 안내합니다.
 
 `.env`의 키 값은 출력하거나 Git에 추가하지 마세요. 기본 LLM 제한과 선택 근거는 [ADR 0002](docs/decisions/0002-openai-test-provider.md)에 기록되어 있습니다.
+
+## 로그인과 사용자별 저장
+
+로그인하지 않아도 게스트 모드로 주요 기능을 사용할 수 있습니다. 이 경우 반려동물 프로필과 상담 내역은 현재 브라우저의 localStorage에 저장됩니다.
+
+Supabase 환경변수를 설정하면 우측 상단의 **회원가입/로그인** 버튼으로 Supabase Auth를 사용하고, 로그인 사용자의 반려동물 프로필과 상담 내역은 FastAPI를 통해 Supabase Postgres에 저장됩니다.
+
+Vercel 프론트 환경변수:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+```
+
+Render 백엔드 환경변수:
+
+```env
+DATABASE_URL=postgresql://...
+DOCQA_SUPABASE_JWT_SECRET=...
+```
+
+`DATABASE_URL`과 `DOCQA_SUPABASE_JWT_SECRET`은 절대 Vercel이나 브라우저 코드에 넣지 마세요.
 
 ## 개발 명령
 

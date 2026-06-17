@@ -1,17 +1,25 @@
-import type { GenerationMode, HealthResponse, QueryResponse, SourceCatalogResponse } from "./types";
+import type {
+  ChatMessage,
+  GenerationMode,
+  HealthResponse,
+  PetProfile,
+  QueryResponse,
+  SourceCatalogResponse,
+} from "./types";
 
 const API_BASE_URL = (import.meta.env.VITE_DOCQA_API_BASE_URL ?? "http://127.0.0.1:8000").replace(
   /\/+$/,
   "",
 );
 
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+async function requestJson<T>(path: string, init?: RequestInit, accessToken?: string): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         ...init?.headers,
       },
     });
@@ -55,4 +63,45 @@ export async function askQuestion(question: string, generationMode: GenerationMo
       generation_mode: generationMode,
     }),
   });
+}
+
+export async function getMyPets(accessToken: string): Promise<PetProfile[]> {
+  const response = await requestJson<{ pets: PetProfile[] }>("/api/v1/me/pets", undefined, accessToken);
+  return response.pets;
+}
+
+export async function saveMyPet(accessToken: string, pet: PetProfile): Promise<PetProfile> {
+  const response = await requestJson<{ pet: PetProfile }>(
+    "/api/v1/me/pets",
+    {
+      method: "POST",
+      body: JSON.stringify(pet),
+    },
+    accessToken,
+  );
+  return response.pet;
+}
+
+export async function getMyMessages(accessToken: string): Promise<ChatMessage[]> {
+  const response = await requestJson<{ messages: ChatMessage[] }>(
+    "/api/v1/me/messages",
+    undefined,
+    accessToken,
+  );
+  return response.messages;
+}
+
+export async function saveMyMessages(
+  accessToken: string,
+  petId: string | null,
+  messages: ChatMessage[],
+): Promise<void> {
+  await requestJson<{ ok: boolean }>(
+    "/api/v1/me/messages",
+    {
+      method: "PUT",
+      body: JSON.stringify({ pet_id: petId, messages }),
+    },
+    accessToken,
+  );
 }

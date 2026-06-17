@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from docqa.api.routes.health import router as health_router
 from docqa.api.routes.query import router as query_router
 from docqa.api.routes.sources import router as sources_router
+from docqa.api.routes.user_data import router as user_data_router
 from docqa.core.config import get_settings
 
 
@@ -27,6 +28,7 @@ def create_app() -> FastAPI:
     application.include_router(health_router, prefix="/api/v1")
     application.include_router(query_router, prefix="/api/v1")
     application.include_router(sources_router, prefix="/api/v1")
+    application.include_router(user_data_router, prefix="/api/v1")
     return application
 
 

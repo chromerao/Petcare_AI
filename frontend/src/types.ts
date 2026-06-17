@@ -56,6 +56,7 @@ export interface PetProfile {
   status: string;
   vet: string;
   note: string;
+  photoUrl: string;
 }
 
 export interface ChatMessage {

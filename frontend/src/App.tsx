@@ -1,9 +1,24 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { askQuestion, getHealth, getSources } from "./api";
+import {
+  askQuestion,
+  getHealth,
+  getMyMessages,
+  getMyPets,
+  getSources,
+  saveMyMessages,
+  saveMyPet,
+} from "./api";
+import { supabase, supabaseConfigured } from "./supabase";
 import type { ChatMessage, GenerationMode, QueryResponse } from "./types";
 
 type Page = "home" | "dashboard" | "chat" | "profile" | "register";
+
+interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+}
 
 interface PetProfile {
   id: string;
@@ -18,7 +33,10 @@ interface PetProfile {
   photoUrl: string;
 }
 
+const AUTH_STORAGE_KEY = "petcare-ai-current-user";
 const PETS_STORAGE_KEY = "petcare-ai-pets";
+const MESSAGES_STORAGE_KEY = "petcare-ai-messages";
+const GUEST_USER_ID = "guest";
 
 const dogPhoto =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuACyhdaGHCc-TwvQn6RtYbW4zOmGSGKaYqqiJxu7CzYNMOXtV7urU5QkBsPxp6hfGaXCotJiNw8nCnFPdL1M7q9MislFg8awpLnvGwBV2wMiUEfa6IvG-0pjFrrhBUQVMvkP-kQGwSZ7J_rCsdJMmQHRcQPnoaYhmbeLNGiNotv6CRLS_zQUI0FoV9akQKfnN9lt1QG3mQvjOYhfA4h4lXl92VW_-fm3PGVlaGblZlEnm8yf019xCq0-BRV1lx18PPfQU_zuMHP6gE";
@@ -82,9 +100,34 @@ function createId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function loadStoredPets(): PetProfile[] {
+function userStorageKey(baseKey: string, userId: string): string {
+  return `${baseKey}:${userId}`;
+}
+
+function normalizeUserId(email: string): string {
+  return email.trim().toLowerCase().replace(/[^a-z0-9@._-]/g, "");
+}
+
+function loadCurrentUser(): AuthUser | null {
   try {
-    const raw = window.localStorage.getItem(PETS_STORAGE_KEY);
+    const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCurrentUser(user: AuthUser | null) {
+  if (user) {
+    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+  } else {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  }
+}
+
+function loadStoredPets(userId: string): PetProfile[] {
+  try {
+    const raw = window.localStorage.getItem(userStorageKey(PETS_STORAGE_KEY, userId));
     if (!raw) return defaultPets;
     const parsed = JSON.parse(raw) as PetProfile[];
     return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultPets;
@@ -93,8 +136,23 @@ function loadStoredPets(): PetProfile[] {
   }
 }
 
-function saveStoredPets(pets: PetProfile[]) {
-  window.localStorage.setItem(PETS_STORAGE_KEY, JSON.stringify(pets));
+function saveStoredPets(userId: string, pets: PetProfile[]) {
+  window.localStorage.setItem(userStorageKey(PETS_STORAGE_KEY, userId), JSON.stringify(pets));
+}
+
+function loadStoredMessages(userId: string): ChatMessage[] {
+  try {
+    const raw = window.localStorage.getItem(userStorageKey(MESSAGES_STORAGE_KEY, userId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as ChatMessage[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredMessages(userId: string, messages: ChatMessage[]) {
+  window.localStorage.setItem(userStorageKey(MESSAGES_STORAGE_KEY, userId), JSON.stringify(messages));
 }
 
 function fallbackPhoto(species: string): string {
@@ -149,11 +207,19 @@ function PetPhoto({ pet, className }: { pet: PetProfile; className: string }) {
 function TopNav({
   activePage,
   onEmergency,
+  onLoginClick,
+  onLogout,
+  onSignupClick,
   setPage,
+  user,
 }: {
   activePage: Page;
   onEmergency: () => void;
+  onLoginClick: () => void;
+  onLogout: () => void;
+  onSignupClick: () => void;
   setPage: (page: Page) => void;
+  user: AuthUser | null;
 }) {
   return (
     <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-xl py-md bg-surface dark:bg-background shadow-sm h-[72px]">
@@ -177,22 +243,167 @@ function TopNav({
           </button>
         ))}
       </nav>
-      <button
-        className="bg-error text-on-error px-4 py-2 rounded-lg font-label-md text-label-md flex items-center gap-xs hover:bg-on-error-container transition-colors shadow-soft"
-        onClick={onEmergency}
-        type="button"
-      >
-        <Icon className="text-sm" children="emergency" />
-        긴급 호출
-      </button>
+      <div className="flex items-center gap-xs">
+        {user && (
+          <div className="hidden lg:flex flex-col items-end leading-tight">
+            <span className="text-label-md font-label-md text-primary">{user.name}</span>
+            <span className="text-label-sm font-label-sm text-on-surface-variant">{user.email}</span>
+          </div>
+        )}
+        <button
+          className="bg-error text-on-error px-3 md:px-4 py-2 rounded-lg font-label-md text-label-md flex items-center gap-xs hover:bg-on-error-container transition-colors shadow-soft"
+          onClick={onEmergency}
+          type="button"
+        >
+          <Icon className="text-sm" children="emergency" />
+          <span className="hidden md:inline">긴급 호출</span>
+        </button>
+        {user ? (
+          <button
+            className="bg-surface-container text-primary px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-surface-container-high transition-colors"
+            onClick={onLogout}
+            type="button"
+          >
+            로그아웃
+          </button>
+        ) : (
+          <>
+            <button
+              className="bg-surface-container text-primary px-3 py-2 rounded-lg font-label-md text-label-md hover:bg-surface-container-high transition-colors"
+              onClick={onSignupClick}
+              type="button"
+            >
+              회원가입
+            </button>
+            <button
+              className="bg-primary text-on-primary px-3 py-2 rounded-lg font-label-md text-label-md hover:shadow-soft transition-colors"
+              onClick={onLoginClick}
+              type="button"
+            >
+              로그인
+            </button>
+          </>
+        )}
+      </div>
     </header>
+  );
+}
+
+function AuthDialog({
+  authError,
+  authMode,
+  authStatus,
+  onClose,
+  onAuthSubmit,
+}: {
+  authError: string | null;
+  authMode: "login" | "signup";
+  authStatus: string | null;
+  onClose: () => void;
+  onAuthSubmit: (
+    mode: "login" | "signup",
+    email: string,
+    password: string,
+    name: string,
+  ) => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    onSubmitForm();
+  }
+
+  function onSubmitForm() {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || password.length < 6) return;
+    onAuthSubmit(authMode, trimmedEmail, password, name.trim());
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm flex items-center justify-center px-margin-mobile">
+      <form
+        className="w-full max-w-lg bg-surface-container-lowest rounded-[2rem] p-lg md:p-xl shadow-lg border border-outline-variant/30"
+        onSubmit={onSubmit}
+      >
+        <div className="flex items-start justify-between gap-md">
+          <div className="w-14 h-14 rounded-2xl bg-primary text-on-primary flex items-center justify-center mb-md">
+            <Icon className="text-3xl" children="pets" />
+          </div>
+          <button className="text-on-surface-variant hover:text-primary" onClick={onClose} type="button">
+            <Icon children="close" />
+          </button>
+        </div>
+        <h2 className="text-headline-lg font-headline-lg text-primary mb-xs">
+          {authMode === "signup" ? "회원가입" : "로그인"}
+        </h2>
+        <p className="text-body-md font-body-md text-on-surface-variant mb-lg">
+          로그인하면 반려동물 프로필과 상담 내역이 Supabase DB에 사용자별로 저장됩니다. 로그인하지 않아도 게스트 모드로 사용할 수 있습니다.
+        </p>
+        {!supabaseConfigured && (
+          <div className="mb-md bg-error-container text-on-error-container rounded-lg p-sm text-label-md font-label-md">
+            Supabase 환경변수가 아직 설정되지 않았습니다. Vercel에 VITE_SUPABASE_URL과 VITE_SUPABASE_PUBLISHABLE_KEY를 추가해 주세요.
+          </div>
+        )}
+          <div className="space-y-md">
+            <label className="flex flex-col gap-xs">
+              <span className="text-label-md font-label-md text-on-surface-variant">이메일</span>
+              <input
+                autoComplete="email"
+                className="bg-surface-container-low rounded-lg px-md py-sm focus:ring-2 focus:ring-primary outline-none"
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="guardian@example.com"
+                required
+                type="email"
+                value={email}
+              />
+            </label>
+            <label className="flex flex-col gap-xs">
+              <span className="text-label-md font-label-md text-on-surface-variant">비밀번호</span>
+              <input
+                autoComplete={authMode === "signup" ? "new-password" : "current-password"}
+                className="bg-surface-container-low rounded-lg px-md py-sm focus:ring-2 focus:ring-primary outline-none"
+                minLength={6}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="6자 이상"
+                required
+                type="password"
+                value={password}
+              />
+            </label>
+            {authMode === "signup" && (
+              <label className="flex flex-col gap-xs">
+                <span className="text-label-md font-label-md text-on-surface-variant">이름 또는 닉네임</span>
+                <input
+                  autoComplete="name"
+                  className="bg-surface-container-low rounded-lg px-md py-sm focus:ring-2 focus:ring-primary outline-none"
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="보호자"
+                  value={name}
+                />
+              </label>
+            )}
+          </div>
+          {authError && <p className="mt-md text-error text-label-md font-label-md">{authError}</p>}
+          {authStatus && <p className="mt-md text-primary text-label-md font-label-md">{authStatus}</p>}
+          <button
+            className="mt-lg w-full bg-primary text-on-primary px-lg py-md rounded-lg font-label-md shadow-soft hover:shadow-md transition-all disabled:opacity-60"
+            disabled={!supabaseConfigured}
+            type="submit"
+          >
+            {authMode === "signup" ? "회원가입" : "로그인"}
+          </button>
+      </form>
+    </div>
   );
 }
 
 function LandingPage({ selectedPet, setPage }: { selectedPet: PetProfile; setPage: (page: Page, question?: string) => void }) {
   return (
     <main className="flex-grow pt-[88px] pb-xxl bg-surface text-on-surface font-body-md">
-      <section className="relative w-full max-w-container-max mx-auto px-margin-mobile md:px-xl py-xl md:py-xxl flex flex-col md:flex-row items-center gap-xl min-h-[780px]">
+      <section className="relative w-full max-w-container-max mx-auto px-margin-mobile md:px-xl py-lg md:py-xl flex flex-col md:flex-row items-center gap-xl md:min-h-[620px]">
         <div className="flex-1 flex flex-col items-start gap-md z-10">
           <div className="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm font-label-sm mb-2">
             <Icon className="text-sm" children="health_and_safety" />
@@ -933,22 +1144,77 @@ function ChatPage({
 }
 
 function App() {
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
   const [page, setPageState] = useState<Page>("home");
   const [apiReady, setApiReady] = useState(false);
   const [sourceCount, setSourceCount] = useState(0);
   const [useOpenAI, setUseOpenAI] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    loadStoredMessages(GUEST_USER_ID),
+  );
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pets, setPets] = useState<PetProfile[]>(() => loadStoredPets());
-  const [selectedPetId, setSelectedPetId] = useState(() => loadStoredPets()[0]?.id ?? "bella");
+  const [pets, setPets] = useState<PetProfile[]>(() => loadStoredPets(GUEST_USER_ID));
+  const [selectedPetId, setSelectedPetId] = useState(
+    () => loadStoredPets(GUEST_USER_ID)[0]?.id ?? "bella",
+  );
   const [editingPetId, setEditingPetId] = useState<string | null>(null);
 
   const generationMode: GenerationMode = useOpenAI ? "openai" : "local";
   const assistantMessages = messages.filter((message) => message.role === "assistant");
   const selectedPet = useMemo(() => pets.find((pet) => pet.id === selectedPetId) ?? pets[0] ?? defaultPets[0], [pets, selectedPetId]);
   const editingPet = editingPetId ? pets.find((pet) => pet.id === editingPetId) ?? null : null;
+
+  async function handleAuthSubmit(
+    mode: "login" | "signup",
+    email: string,
+    password: string,
+    name: string,
+  ) {
+    if (!supabase) return;
+    setAuthError(null);
+    setAuthStatus(null);
+    if (mode === "signup") {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name: name || email.split("@")[0] } },
+      });
+      if (signUpError) {
+        setAuthError(signUpError.message);
+        return;
+      }
+      setAuthStatus("회원가입이 완료되었습니다. 이메일 확인이 필요한 설정이면 메일을 확인해 주세요.");
+    } else {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setAuthError(signInError.message);
+        return;
+      }
+      setAuthMode(null);
+    }
+  }
+
+  async function handleLogout() {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    saveCurrentUser(null);
+    setCurrentUser(null);
+    setAccessToken(null);
+    const guestPets = loadStoredPets(GUEST_USER_ID);
+    setPets(guestPets);
+    setMessages(loadStoredMessages(GUEST_USER_ID));
+    setDraft("");
+    setEditingPetId(null);
+    setSelectedPetId(guestPets[0]?.id ?? "bella");
+    setPageState("home");
+  }
 
   function setPage(nextPage: Page, question?: string) {
     if (nextPage === "register") {
@@ -970,14 +1236,104 @@ function App() {
       const exists = previous.some((item) => item.id === pet.id);
       return exists ? previous.map((item) => (item.id === pet.id ? pet : item)) : [...previous, pet];
     });
+    if (accessToken) {
+      void saveMyPet(accessToken, pet).catch((caught) => {
+        setError(caught instanceof Error ? caught.message : "반려동물 정보를 DB에 저장하지 못했습니다.");
+      });
+    }
     setSelectedPetId(pet.id);
     setEditingPetId(null);
     setPageState("profile");
   }
 
   useEffect(() => {
-    saveStoredPets(pets);
-  }, [pets]);
+    const storageUserId = currentUser?.id ?? GUEST_USER_ID;
+    saveStoredPets(storageUserId, pets);
+  }, [currentUser, pets]);
+
+  useEffect(() => {
+    const storageUserId = currentUser?.id ?? GUEST_USER_ID;
+    saveStoredMessages(storageUserId, messages);
+    if (currentUser && accessToken) {
+      void saveMyMessages(accessToken, selectedPet.id, messages).catch(() => {
+        // Keep local fallback data even if remote sync is temporarily unavailable.
+      });
+    }
+  }, [accessToken, currentUser, messages, selectedPet.id]);
+
+  useEffect(() => {
+    if (!supabase) return;
+
+    function applySession(session: { access_token?: string; user?: { id: string; email?: string; user_metadata?: { name?: string } } } | null) {
+      if (!session?.user || !session.access_token) {
+        return;
+      }
+      const email = session.user.email ?? "user@supabase.local";
+      const user: AuthUser = {
+        id: session.user.id,
+        email,
+        name: session.user.user_metadata?.name || email.split("@")[0] || "보호자",
+      };
+      saveCurrentUser(user);
+      setCurrentUser(user);
+      setAccessToken(session.access_token);
+      setAuthMode(null);
+    }
+
+    void supabase.auth.getSession().then(({ data }) => {
+      applySession(data.session);
+    });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      applySession(session);
+      if (!session) {
+        saveCurrentUser(null);
+        setCurrentUser(null);
+        setAccessToken(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser || !accessToken) return;
+
+    const token = accessToken;
+    const userId = currentUser.id;
+    let cancelled = false;
+    async function loadRemoteUserData() {
+      try {
+        const [remotePets, remoteMessages] = await Promise.all([
+          getMyPets(token),
+          getMyMessages(token),
+        ]);
+        if (cancelled) return;
+        const nextPets = remotePets.length ? remotePets : loadStoredPets(userId);
+        const nextMessages = remoteMessages.length
+          ? remoteMessages
+          : loadStoredMessages(userId);
+        setPets(nextPets);
+        setMessages(nextMessages);
+        setSelectedPetId(nextPets[0]?.id ?? "bella");
+        setError(null);
+      } catch (caught) {
+        if (!cancelled) {
+          const fallbackPets = loadStoredPets(userId);
+          setPets(fallbackPets);
+          setMessages(loadStoredMessages(userId));
+          setSelectedPetId(fallbackPets[0]?.id ?? "bella");
+          setError(caught instanceof Error ? caught.message : "사용자 데이터를 불러오지 못했습니다.");
+        }
+      }
+    }
+
+    void loadRemoteUserData();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, currentUser]);
 
   useEffect(() => {
     if (!pets.some((pet) => pet.id === selectedPetId) && pets[0]) {
@@ -1038,8 +1394,29 @@ function App() {
       <TopNav
         activePage={page}
         onEmergency={() => void submit("응급 신호가 보일 때 보호자가 즉시 확인하고 병원에 전달해야 할 정보는 무엇인가요?")}
+        onLoginClick={() => {
+          setAuthMode("login");
+          setAuthError(null);
+          setAuthStatus(null);
+        }}
+        onLogout={handleLogout}
+        onSignupClick={() => {
+          setAuthMode("signup");
+          setAuthError(null);
+          setAuthStatus(null);
+        }}
         setPage={setPage}
+        user={currentUser}
       />
+      {authMode && (
+        <AuthDialog
+          authError={authError}
+          authMode={authMode}
+          authStatus={authStatus}
+          onAuthSubmit={handleAuthSubmit}
+          onClose={() => setAuthMode(null)}
+        />
+      )}
       {page === "home" && <LandingPage selectedPet={selectedPet} setPage={setPage} />}
       {page === "dashboard" && <DashboardPage pets={pets} selectedPet={selectedPet} setPage={setPage} setSelectedPetId={setSelectedPetId} />}
       {page === "profile" && <ProfilePage onEdit={openEditProfile} pet={selectedPet} setPage={setPage} />}

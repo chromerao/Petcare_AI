@@ -37,6 +37,31 @@ class QueryResponse(BaseModel):
     safety_notice: str | None = None
 
 
+class PetProfilePayload(BaseModel):
+    id: str = Field(min_length=1, max_length=120)
+    name: str = Field(min_length=1, max_length=120)
+    species: str = Field(default="", max_length=80)
+    breed: str = Field(default="", max_length=120)
+    age: str = Field(default="", max_length=80)
+    weight: str = Field(default="", max_length=80)
+    status: str = Field(default="", max_length=120)
+    vet: str = Field(default="", max_length=200)
+    note: str = Field(default="", max_length=2000)
+    photoUrl: str = Field(default="", max_length=200_000)
+
+
+class StoredChatMessage(BaseModel):
+    id: str = Field(min_length=1, max_length=120)
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=20_000)
+    response: dict[str, Any] | None = None
+
+
+class ChatMessagesPayload(BaseModel):
+    pet_id: str | None = Field(default=None, max_length=120)
+    messages: list[StoredChatMessage]
+
+
 class SourceRecord(BaseModel):
     source_id: str
     title: str

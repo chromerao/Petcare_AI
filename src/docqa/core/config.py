@@ -31,10 +31,22 @@ class Settings(BaseSettings):
     openai_max_retries: int = Field(default=1, ge=0, le=2)
     openai_store: bool = False
     llm_max_input_characters: int = Field(default=24_000, ge=1000, le=100_000)
+    database_url: SecretStr | None = Field(default=None, repr=False)
+    supabase_jwt_secret: SecretStr | None = Field(default=None, repr=False)
 
     @property
     def openai_configured(self) -> bool:
         return self.openai_api_key is not None and bool(self.openai_api_key.get_secret_value())
+
+    @property
+    def database_configured(self) -> bool:
+        return self.database_url is not None and bool(self.database_url.get_secret_value())
+
+    @property
+    def supabase_auth_configured(self) -> bool:
+        return self.supabase_jwt_secret is not None and bool(
+            self.supabase_jwt_secret.get_secret_value()
+        )
 
     @property
     def cors_origins(self) -> list[str]:

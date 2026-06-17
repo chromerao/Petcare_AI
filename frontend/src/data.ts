@@ -11,6 +11,8 @@ export const petProfiles: PetProfile[] = [
     status: "관찰 안정",
     vet: "오크리지 동물병원",
     note: "위장이 예민하고 긴 산책 후 다리 피로가 가끔 있습니다.",
+    photoUrl:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuACyhdaGHCc-TwvQn6RtYbW4zOmGSGKaYqqiJxu7CzYNMOXtV7urU5QkBsPxp6hfGaXCotJiNw8nCnFPdL1M7q9MislFg8awpLnvGwBV2wMiUEfa6IvG-0pjFrrhBUQVMvkP-kQGwSZ7J_rCsdJMmQHRcQPnoaYhmbeLNGiNotv6CRLS_zQUI0FoV9akQKfnN9lt1QG3mQvjOYhfA4h4lXl92VW_-fm3PGVlaGblZlEnm8yf019xCq0-BRV1lx18PPfQU_zuMHP6gE",
   },
   {
     id: "max",
@@ -22,6 +24,8 @@ export const petProfiles: PetProfile[] = [
     status: "노령 케어",
     vet: "동네동물의료센터",
     note: "음수량, 배뇨 횟수, 식욕 변화를 주기적으로 관찰합니다.",
+    photoUrl:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuCz4lWf4CbWjOXO8s9Er6XDF4Q6TjA-BltGVWqJFQPkPROklLPkb9EucN515YyLoqwi2lgoY4BkqthMccPfv7nZU-9XODa42Dn0VBfLtkcDi63wgkyKz3R44tDt6CYdnCYuEetCji8CUDXg09ED4tzWt25NfePw6jNri4-3MlXsxQQpsJ4DEQuz5b5rNT8qatr2SjX7mXdvqzaWbbWjpy3kgtD6IIuhmiFkHqPHhYDX9oPwJ7YToZ1nBMyQKNPAPxhfLmqW3PlYU48",
   },
 ];
 
