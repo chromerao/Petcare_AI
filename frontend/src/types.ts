@@ -65,3 +65,12 @@ export interface ChatMessage {
   content: string;
   response?: QueryResponse;
 }
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  pet_id: string | null;
+  message_count: number;
+  created_at: string;
+  updated_at: string;
+}

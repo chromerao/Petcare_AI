@@ -310,13 +310,37 @@ def intent_boost(query: str, chunk: IndexedChunk) -> float:
 
 
 class LocalKeywordRetriever:
-    """Hybrid lexical and character n-gram retriever for pet care knowledge."""
+    """Hybrid lexical, vector, and character n-gram retriever for pet care knowledge."""
 
     def __init__(self, chunks: tuple[IndexedChunk, ...] | None = None) -> None:
         self._chunks = chunks or (*load_markdown_chunks(), *load_official_source_chunks())
         self._document_frequency = Counter(
             token for chunk in self._chunks for token in set(chunk.term_counts)
         )
+
+    def _idf(self, term: str) -> float:
+        corpus_size = max(len(self._chunks), 1)
+        return math.log(1 + corpus_size / (1 + self._document_frequency[term]))
+
+    def _tfidf_cosine(self, query_counts: Counter[str], chunk: IndexedChunk) -> float:
+        query_norm = 0.0
+        chunk_norm = 0.0
+        dot_product = 0.0
+
+        for term, frequency in query_counts.items():
+            weight = (1 + math.log(frequency)) * self._idf(term)
+            query_norm += weight * weight
+            chunk_frequency = chunk.term_counts.get(term, 0)
+            if chunk_frequency:
+                dot_product += weight * (1 + math.log(chunk_frequency)) * self._idf(term)
+
+        for term, frequency in chunk.term_counts.items():
+            weight = (1 + math.log(frequency)) * self._idf(term)
+            chunk_norm += weight * weight
+
+        if not query_norm or not chunk_norm:
+            return 0.0
+        return dot_product / math.sqrt(query_norm * chunk_norm)
 
     def search(
         self,
@@ -333,12 +357,12 @@ class LocalKeywordRetriever:
 
         raw_terms = tokenize(query)
         query_terms = expand_concepts(query, raw_terms)
+        query_counts = Counter(query_terms)
         query_ngrams = character_ngrams(query)
         if not query_terms and not query_ngrams:
             return []
 
         scored: list[RetrievedChunk] = []
-        corpus_size = max(len(self._chunks), 1)
         for chunk in self._chunks:
             if not set(chunk.acl).intersection(context.allowed_acl):
                 continue
@@ -347,9 +371,7 @@ class LocalKeywordRetriever:
             for term in query_terms:
                 frequency = chunk.term_counts.get(term, 0)
                 if frequency:
-                    inverse_document_frequency = math.log(
-                        1 + corpus_size / (1 + self._document_frequency[term])
-                    )
+                    inverse_document_frequency = self._idf(term)
                     lexical_score += (1 + math.log(frequency)) * inverse_document_frequency
 
                 if term in chunk.title.lower() or term in chunk.locator.lower():
@@ -361,7 +383,13 @@ class LocalKeywordRetriever:
                 if ngram_union
                 else 0.0
             )
-            score = lexical_score + ngram_similarity * 8.0 + intent_boost(query, chunk)
+            vector_score = self._tfidf_cosine(query_counts, chunk)
+            score = (
+                lexical_score
+                + vector_score * 12.0
+                + ngram_similarity * 8.0
+                + intent_boost(query, chunk)
+            )
             if score < 1.8:
                 continue
 

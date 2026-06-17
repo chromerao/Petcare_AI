@@ -29,13 +29,34 @@ create table if not exists pets (
 );
 
 alter table pets drop constraint if exists pets_pkey;
-alter table pets add constraint pets_user_id_id_key unique (user_id, id);
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint where conname = 'pets_user_id_id_key'
+    ) then
+        alter table pets add constraint pets_user_id_id_key unique (user_id, id);
+    end if;
+end $$;
 
 create index if not exists pets_user_id_idx on pets(user_id);
+
+create table if not exists chat_sessions (
+    id text not null,
+    user_id text not null,
+    pet_id text,
+    title text not null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    primary key (user_id, id)
+);
+
+create index if not exists chat_sessions_user_id_updated_idx
+    on chat_sessions(user_id, updated_at desc);
 
 create table if not exists chat_messages (
     id text primary key,
     user_id text not null,
+    session_id text not null default 'default',
     pet_id text,
     role text not null,
     content text not null,
@@ -43,8 +64,13 @@ create table if not exists chat_messages (
     created_at timestamptz not null default now()
 );
 
+alter table chat_messages add column if not exists session_id text not null default 'default';
+
 create index if not exists chat_messages_user_id_created_idx
     on chat_messages(user_id, created_at);
+
+create index if not exists chat_messages_user_id_session_created_idx
+    on chat_messages(user_id, session_id, created_at);
 """
 
 
@@ -128,20 +154,37 @@ class UserStore:
         user_id: str,
         pet_id: str | None,
         messages: list[dict[str, Any]],
+        session_id: str = "default",
     ) -> None:
+        title = self._session_title_from_messages(messages)
         with self._connection() as connection:
-            connection.execute("delete from chat_messages where user_id = %s", (user_id,))
+            connection.execute(
+                """
+                insert into chat_sessions (id, user_id, pet_id, title, created_at, updated_at)
+                values (%s, %s, %s, %s, %s, %s)
+                on conflict (user_id, id) do update set
+                    pet_id = excluded.pet_id,
+                    title = excluded.title,
+                    updated_at = excluded.updated_at
+                """,
+                (session_id, user_id, pet_id, title, datetime.now(UTC), datetime.now(UTC)),
+            )
+            connection.execute(
+                "delete from chat_messages where user_id = %s and session_id = %s",
+                (user_id, session_id),
+            )
             for index, message in enumerate(messages):
                 connection.execute(
                     """
                     insert into chat_messages (
-                        id, user_id, pet_id, role, content, response_json, created_at
+                        id, user_id, session_id, pet_id, role, content, response_json, created_at
                     )
-                    values (%s, %s, %s, %s, %s, %s, %s)
+                    values (%s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         message.get("id") or f"message-{index}",
                         user_id,
+                        session_id,
                         pet_id,
                         message.get("role", ""),
                         message.get("content", ""),
@@ -151,16 +194,16 @@ class UserStore:
                 )
             connection.commit()
 
-    def list_messages(self, user_id: str) -> list[dict[str, Any]]:
+    def list_messages(self, user_id: str, session_id: str = "default") -> list[dict[str, Any]]:
         with self._connection() as connection:
             rows = connection.execute(
                 """
                 select id, role, content, response_json
                 from chat_messages
-                where user_id = %s
+                where user_id = %s and session_id = %s
                 order by created_at asc
                 """,
-                (user_id,),
+                (user_id, session_id),
             ).fetchall()
             return [
                 {
@@ -177,3 +220,77 @@ class UserStore:
                 }
                 for row in rows
             ]
+
+    def list_chat_sessions(self, user_id: str) -> list[dict[str, Any]]:
+        with self._connection() as connection:
+            rows = connection.execute(
+                """
+                select
+                    sessions.id,
+                    sessions.title,
+                    sessions.pet_id,
+                    sessions.created_at,
+                    sessions.updated_at,
+                    count(messages.id)::int as message_count
+                from chat_sessions sessions
+                left join chat_messages messages
+                    on messages.user_id = sessions.user_id
+                   and messages.session_id = sessions.id
+                where sessions.user_id = %s
+                group by sessions.id, sessions.title, sessions.pet_id,
+                         sessions.created_at, sessions.updated_at
+                order by sessions.updated_at desc
+                """,
+                (user_id,),
+            ).fetchall()
+            return [
+                {
+                    "id": row["id"],
+                    "title": row["title"],
+                    "pet_id": row["pet_id"],
+                    "message_count": row["message_count"],
+                    "created_at": row["created_at"].isoformat(),
+                    "updated_at": row["updated_at"].isoformat(),
+                }
+                for row in rows
+            ]
+
+    def upsert_chat_session(
+        self,
+        user_id: str,
+        session_id: str,
+        title: str,
+        pet_id: str | None,
+    ) -> dict[str, Any]:
+        now = datetime.now(UTC)
+        with self._connection() as connection:
+            row = connection.execute(
+                """
+                insert into chat_sessions (id, user_id, pet_id, title, created_at, updated_at)
+                values (%s, %s, %s, %s, %s, %s)
+                on conflict (user_id, id) do update set
+                    pet_id = excluded.pet_id,
+                    title = excluded.title,
+                    updated_at = excluded.updated_at
+                returning id, title, pet_id, created_at, updated_at
+                """,
+                (session_id, user_id, pet_id, title, now, now),
+            ).fetchone()
+            connection.commit()
+            if row is None:
+                raise PermissionError("Chat session does not belong to this user.")
+            return {
+                "id": row["id"],
+                "title": row["title"],
+                "pet_id": row["pet_id"],
+                "message_count": 0,
+                "created_at": row["created_at"].isoformat(),
+                "updated_at": row["updated_at"].isoformat(),
+            }
+
+    @staticmethod
+    def _session_title_from_messages(messages: list[dict[str, Any]]) -> str:
+        for message in messages:
+            if message.get("role") == "user" and message.get("content"):
+                return str(message["content"]).strip()[:80] or "New consultation"
+        return "New consultation"

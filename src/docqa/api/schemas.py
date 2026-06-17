@@ -59,7 +59,23 @@ class StoredChatMessage(BaseModel):
 
 class ChatMessagesPayload(BaseModel):
     pet_id: str | None = Field(default=None, max_length=120)
+    session_id: str | None = Field(default=None, max_length=120)
     messages: list[StoredChatMessage]
+
+
+class ChatSessionPayload(BaseModel):
+    id: str | None = Field(default=None, max_length=120)
+    title: str = Field(default="New consultation", min_length=1, max_length=160)
+    pet_id: str | None = Field(default=None, max_length=120)
+
+
+class ChatSessionRecord(BaseModel):
+    id: str
+    title: str
+    pet_id: str | None = None
+    message_count: int = 0
+    created_at: str
+    updated_at: str
 
 
 class SourceRecord(BaseModel):

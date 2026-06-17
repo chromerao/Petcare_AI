@@ -1,5 +1,6 @@
 import type {
   ChatMessage,
+  ChatSession,
   GenerationMode,
   HealthResponse,
   PetProfile,
@@ -95,12 +96,62 @@ export async function saveMyMessages(
   accessToken: string,
   petId: string | null,
   messages: ChatMessage[],
+  sessionId = "default",
 ): Promise<void> {
   await requestJson<{ ok: boolean }>(
     "/api/v1/me/messages",
     {
       method: "PUT",
-      body: JSON.stringify({ pet_id: petId, messages }),
+      body: JSON.stringify({ pet_id: petId, session_id: sessionId, messages }),
+    },
+    accessToken,
+  );
+}
+
+export async function getMyChatSessions(accessToken: string): Promise<ChatSession[]> {
+  const response = await requestJson<{ sessions: ChatSession[] }>(
+    "/api/v1/me/chat-sessions",
+    undefined,
+    accessToken,
+  );
+  return response.sessions;
+}
+
+export async function saveMyChatSession(
+  accessToken: string,
+  session: Pick<ChatSession, "id" | "title" | "pet_id">,
+): Promise<ChatSession> {
+  const response = await requestJson<{ session: ChatSession }>(
+    "/api/v1/me/chat-sessions",
+    {
+      method: "POST",
+      body: JSON.stringify({ id: session.id, title: session.title, pet_id: session.pet_id }),
+    },
+    accessToken,
+  );
+  return response.session;
+}
+
+export async function getMySessionMessages(accessToken: string, sessionId: string): Promise<ChatMessage[]> {
+  const response = await requestJson<{ messages: ChatMessage[] }>(
+    `/api/v1/me/chat-sessions/${encodeURIComponent(sessionId)}/messages`,
+    undefined,
+    accessToken,
+  );
+  return response.messages;
+}
+
+export async function saveMySessionMessages(
+  accessToken: string,
+  sessionId: string,
+  petId: string | null,
+  messages: ChatMessage[],
+): Promise<void> {
+  await requestJson<{ ok: boolean }>(
+    `/api/v1/me/chat-sessions/${encodeURIComponent(sessionId)}/messages`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ pet_id: petId, session_id: sessionId, messages }),
     },
     accessToken,
   );

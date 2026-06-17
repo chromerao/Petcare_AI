@@ -3,7 +3,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from docqa.api.auth import get_current_user_id
-from docqa.api.schemas import ChatMessagesPayload, PetProfilePayload
+from docqa.api.schemas import ChatMessagesPayload, ChatSessionPayload, PetProfilePayload
 from docqa.core.config import Settings, get_settings
 from docqa.storage.postgres import UserStore
 
@@ -74,5 +74,64 @@ def replace_my_messages(
         user_id,
         payload.pet_id,
         [message.model_dump() for message in payload.messages],
+        payload.session_id or "default",
+    )
+    return {"ok": True}
+
+
+@router.get("/me/chat-sessions")
+def list_my_chat_sessions(
+    user_id: Annotated[str, Depends(get_current_user_id)] = "",
+    store: Annotated[UserStore | None, Depends(get_user_store)] = None,
+) -> dict[str, list[dict[str, Any]]]:
+    if store is None:
+        store = get_user_store()
+    return {"sessions": store.list_chat_sessions(user_id)}
+
+
+@router.post("/me/chat-sessions")
+def upsert_my_chat_session(
+    payload: ChatSessionPayload,
+    user_id: Annotated[str, Depends(get_current_user_id)] = "",
+    store: Annotated[UserStore | None, Depends(get_user_store)] = None,
+) -> dict[str, dict[str, Any]]:
+    if store is None:
+        store = get_user_store()
+    session_id = payload.id or "default"
+    return {
+        "session": store.upsert_chat_session(
+            user_id=user_id,
+            session_id=session_id,
+            title=payload.title,
+            pet_id=payload.pet_id,
+        )
+    }
+
+
+@router.get("/me/chat-sessions/{session_id}/messages")
+def list_my_session_messages(
+    session_id: str,
+    user_id: Annotated[str, Depends(get_current_user_id)] = "",
+    store: Annotated[UserStore | None, Depends(get_user_store)] = None,
+) -> dict[str, list[dict[str, Any]]]:
+    if store is None:
+        store = get_user_store()
+    return {"messages": store.list_messages(user_id, session_id)}
+
+
+@router.put("/me/chat-sessions/{session_id}/messages")
+def replace_my_session_messages(
+    session_id: str,
+    payload: ChatMessagesPayload,
+    user_id: Annotated[str, Depends(get_current_user_id)] = "",
+    store: Annotated[UserStore | None, Depends(get_user_store)] = None,
+) -> dict[str, bool]:
+    if store is None:
+        store = get_user_store()
+    store.replace_messages(
+        user_id,
+        payload.pet_id,
+        [message.model_dump() for message in payload.messages],
+        session_id,
     )
     return {"ok": True}

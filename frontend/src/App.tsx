@@ -2,15 +2,17 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   askQuestion,
+  getMyChatSessions,
   getHealth,
-  getMyMessages,
   getMyPets,
+  getMySessionMessages,
+  saveMyChatSession,
   getSources,
-  saveMyMessages,
   saveMyPet,
+  saveMySessionMessages,
 } from "./api";
-import { supabase, supabaseConfigured } from "./supabase";
-import type { ChatMessage, GenerationMode, QueryResponse } from "./types";
+import { petPhotoBucket, supabase, supabaseConfigured } from "./supabase";
+import type { ChatMessage, ChatSession, GenerationMode, QueryResponse } from "./types";
 
 type Page = "home" | "dashboard" | "chat" | "profile" | "register";
 
@@ -36,6 +38,7 @@ interface PetProfile {
 const AUTH_STORAGE_KEY = "petcare-ai-current-user";
 const PETS_STORAGE_KEY = "petcare-ai-pets";
 const MESSAGES_STORAGE_KEY = "petcare-ai-messages";
+const CHAT_SESSIONS_STORAGE_KEY = "petcare-ai-chat-sessions";
 const GUEST_USER_ID = "guest";
 
 const dogPhoto =
@@ -155,6 +158,57 @@ function saveStoredMessages(userId: string, messages: ChatMessage[]) {
   window.localStorage.setItem(userStorageKey(MESSAGES_STORAGE_KEY, userId), JSON.stringify(messages));
 }
 
+function defaultChatSession(petId: string | null): ChatSession {
+  const now = new Date().toISOString();
+  return {
+    id: "default",
+    title: "최근 상담",
+    pet_id: petId,
+    message_count: 0,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+function loadStoredChatSessions(userId: string, petId: string | null): ChatSession[] {
+  try {
+    const raw = window.localStorage.getItem(userStorageKey(CHAT_SESSIONS_STORAGE_KEY, userId));
+    if (!raw) return [defaultChatSession(petId)];
+    const parsed = JSON.parse(raw) as ChatSession[];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [defaultChatSession(petId)];
+  } catch {
+    return [defaultChatSession(petId)];
+  }
+}
+
+function saveStoredChatSessions(userId: string, sessions: ChatSession[]) {
+  window.localStorage.setItem(userStorageKey(CHAT_SESSIONS_STORAGE_KEY, userId), JSON.stringify(sessions));
+}
+
+function sessionStorageKey(userId: string, sessionId: string): string {
+  return `${MESSAGES_STORAGE_KEY}:${userId}:${sessionId}`;
+}
+
+function loadStoredSessionMessages(userId: string, sessionId: string): ChatMessage[] {
+  try {
+    const raw = window.localStorage.getItem(sessionStorageKey(userId, sessionId));
+    if (raw) {
+      const parsed = JSON.parse(raw) as ChatMessage[];
+      return Array.isArray(parsed) ? parsed : [];
+    }
+    return sessionId === "default" ? loadStoredMessages(userId) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredSessionMessages(userId: string, sessionId: string, messages: ChatMessage[]) {
+  window.localStorage.setItem(sessionStorageKey(userId, sessionId), JSON.stringify(messages));
+  if (sessionId === "default") {
+    saveStoredMessages(userId, messages);
+  }
+}
+
 function fallbackPhoto(species: string): string {
   return species.includes("고양") ? catPhoto : dogPhoto;
 }
@@ -166,6 +220,24 @@ function fileToDataUrl(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
+}
+
+async function uploadPetPhoto(file: File, userId: string, petId: string): Promise<string> {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+  const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const safePetId = petId.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const path = `${userId}/${safePetId}/${Date.now()}.${extension}`;
+  const { error } = await supabase.storage.from(petPhotoBucket).upload(path, file, {
+    cacheControl: "3600",
+    upsert: true,
+  });
+  if (error) {
+    throw error;
+  }
+  const { data } = supabase.storage.from(petPhotoBucket).getPublicUrl(path);
+  return data.publicUrl;
 }
 
 function answerLabel(response: QueryResponse): string {
@@ -733,10 +805,12 @@ function ProfilePage({
 }
 
 function RegisterPetPage({
+  currentUser,
   initialPet,
   onCancel,
   onSave,
 }: {
+  currentUser: AuthUser | null;
   initialPet: PetProfile | null;
   onCancel: () => void;
   onSave: (pet: PetProfile) => void;
@@ -768,8 +842,18 @@ function RegisterPetPage({
       return;
     }
     setUploadError(null);
-    const photoUrl = await fileToDataUrl(file);
-    setForm((previous) => ({ ...previous, photoUrl }));
+    const previewUrl = await fileToDataUrl(file);
+    setForm((previous) => ({ ...previous, photoUrl: previewUrl }));
+    if (!currentUser || !supabase) {
+      return;
+    }
+    try {
+      const petId = form.id || initialPet?.id || createId("pet");
+      const publicUrl = await uploadPetPhoto(file, currentUser.id, petId);
+      setForm((previous) => ({ ...previous, id: previous.id || petId, photoUrl: publicUrl }));
+    } catch {
+      setUploadError("Storage 업로드는 실패했지만, 로컬 미리보기 사진은 유지했습니다. Supabase bucket/RLS 설정을 확인해 주세요.");
+    }
   }
 
   function update<K extends keyof PetProfile>(key: K, value: PetProfile[K]) {
@@ -964,9 +1048,12 @@ function ChatPage({
   error,
   loading,
   messages,
+  activeSessionId,
+  chatSessions,
+  onNewSession,
+  onSelectSession,
   selectedPet,
   setDraft,
-  setMessages,
   sourceCount,
   submit,
   useOpenAI,
@@ -978,9 +1065,12 @@ function ChatPage({
   error: string | null;
   loading: boolean;
   messages: ChatMessage[];
+  activeSessionId: string;
+  chatSessions: ChatSession[];
+  onNewSession: () => void;
+  onSelectSession: (sessionId: string) => void;
   selectedPet: PetProfile;
   setDraft: (value: string) => void;
-  setMessages: (value: ChatMessage[]) => void;
   sourceCount: number;
   submit: (question: string) => Promise<void>;
   useOpenAI: boolean;
@@ -1022,6 +1112,23 @@ function ChatPage({
         <div className="p-md flex-1">
           <h2 className="text-label-md font-label-md text-on-surface-variant mb-sm">히스토리</h2>
           <ul className="space-y-sm">
+            {chatSessions.map((session) => (
+              <li key={session.id}>
+                <button
+                  className={`w-full text-left p-sm rounded-lg flex items-start gap-sm transition-colors ${session.id === activeSessionId ? "bg-secondary-fixed text-primary" : "hover:bg-surface-container-low"}`}
+                  onClick={() => onSelectSession(session.id)}
+                  type="button"
+                >
+                  <Icon className="text-secondary mt-1" children="history" />
+                  <div>
+                    <p className="text-body-md font-body-md text-on-surface">{session.title}</p>
+                    <p className="text-label-sm font-label-sm text-on-surface-variant">
+                      메시지 {session.message_count}개 · {session.pet_id === selectedPet.id ? selectedPet.name : "저장됨"}
+                    </p>
+                  </div>
+                </button>
+              </li>
+            ))}
             {assistantMessages.length > 0
               ? assistantMessages
                   .slice(-4)
@@ -1052,7 +1159,7 @@ function ChatPage({
         </div>
 
         <div className="p-md border-t border-outline-variant/20 mt-auto">
-          <button className="w-full py-2 px-4 rounded-lg bg-surface-container border border-outline-variant text-on-surface font-label-md text-label-md flex items-center justify-center gap-xs hover:bg-surface-container-high transition-colors" onClick={() => setMessages([])} type="button">
+          <button className="w-full py-2 px-4 rounded-lg bg-surface-container border border-outline-variant text-on-surface font-label-md text-label-md flex items-center justify-center gap-xs hover:bg-surface-container-high transition-colors" onClick={onNewSession} type="button">
             <Icon className="text-sm" children="add" />새 상담 시작
           </button>
         </div>
@@ -1156,6 +1263,10 @@ function App() {
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
     loadStoredMessages(GUEST_USER_ID),
   );
+  const [activeSessionId, setActiveSessionId] = useState("default");
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>(() =>
+    loadStoredChatSessions(GUEST_USER_ID, loadStoredPets(GUEST_USER_ID)[0]?.id ?? "bella"),
+  );
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1210,8 +1321,11 @@ function App() {
     setCurrentUser(null);
     setAccessToken(null);
     const guestPets = loadStoredPets(GUEST_USER_ID);
+    const guestSessionId = "default";
     setPets(guestPets);
-    setMessages(loadStoredMessages(GUEST_USER_ID));
+    setActiveSessionId(guestSessionId);
+    setChatSessions(loadStoredChatSessions(GUEST_USER_ID, guestPets[0]?.id ?? "bella"));
+    setMessages(loadStoredSessionMessages(GUEST_USER_ID, guestSessionId));
     setDraft("");
     setEditingPetId(null);
     setSelectedPetId(guestPets[0]?.id ?? "bella");
@@ -1277,13 +1391,14 @@ function App() {
 
   useEffect(() => {
     const storageUserId = currentUser?.id ?? GUEST_USER_ID;
-    saveStoredMessages(storageUserId, messages);
+    saveStoredSessionMessages(storageUserId, activeSessionId, messages);
+    saveStoredChatSessions(storageUserId, chatSessions);
     if (currentUser && accessToken && remoteHydratedUserRef.current === currentUser.id) {
-      void saveMyMessages(accessToken, selectedPet.id, messages).catch(() => {
+      void saveMySessionMessages(accessToken, activeSessionId, selectedPet.id, messages).catch(() => {
         // Keep local fallback data even if remote sync is temporarily unavailable.
       });
     }
-  }, [accessToken, currentUser, messages, selectedPet.id]);
+  }, [accessToken, activeSessionId, chatSessions, currentUser, messages, selectedPet.id]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -1299,11 +1414,15 @@ function App() {
         name: session.user.user_metadata?.name || email.split("@")[0] || "보호자",
       };
       const localPets = loadStoredPets(user.id);
-      const localMessages = loadStoredMessages(user.id);
+      const localSessions = loadStoredChatSessions(user.id, localPets[0]?.id ?? "bella");
+      const localSessionId = localSessions[0]?.id ?? "default";
+      const localMessages = loadStoredSessionMessages(user.id, localSessionId);
       remoteHydratedUserRef.current = null;
       lastPetsSyncRef.current = "";
       saveCurrentUser(user);
       setPets(localPets);
+      setActiveSessionId(localSessionId);
+      setChatSessions(localSessions);
       setMessages(localMessages);
       setSelectedPetId(localPets[0]?.id ?? "bella");
       setCurrentUser(user);
@@ -1338,16 +1457,24 @@ function App() {
     let cancelled = false;
     async function loadRemoteUserData() {
       try {
-        const [remotePets, remoteMessages] = await Promise.all([
+        const [remotePets, remoteSessions] = await Promise.all([
           getMyPets(token),
-          getMyMessages(token),
+          getMyChatSessions(token),
         ]);
         if (cancelled) return;
         const nextPets = remotePets.length ? remotePets : loadStoredPets(userId);
+        const nextSessions = remoteSessions.length
+          ? remoteSessions
+          : loadStoredChatSessions(userId, nextPets[0]?.id ?? "bella");
+        const nextSessionId = nextSessions[0]?.id ?? "default";
+        const remoteMessages = await getMySessionMessages(token, nextSessionId);
+        if (cancelled) return;
         const nextMessages = remoteMessages.length
           ? remoteMessages
-          : loadStoredMessages(userId);
+          : loadStoredSessionMessages(userId, nextSessionId);
         setPets(nextPets);
+        setChatSessions(nextSessions);
+        setActiveSessionId(nextSessionId);
         setMessages(nextMessages);
         setSelectedPetId(nextPets[0]?.id ?? "bella");
         remoteHydratedUserRef.current = userId;
@@ -1356,8 +1483,12 @@ function App() {
       } catch (caught) {
         if (!cancelled) {
           const fallbackPets = loadStoredPets(userId);
+          const fallbackSessions = loadStoredChatSessions(userId, fallbackPets[0]?.id ?? "bella");
+          const fallbackSessionId = fallbackSessions[0]?.id ?? "default";
           setPets(fallbackPets);
-          setMessages(loadStoredMessages(userId));
+          setChatSessions(fallbackSessions);
+          setActiveSessionId(fallbackSessionId);
+          setMessages(loadStoredSessionMessages(userId, fallbackSessionId));
           setSelectedPetId(fallbackPets[0]?.id ?? "bella");
           remoteHydratedUserRef.current = userId;
           lastPetsSyncRef.current = "";
@@ -1404,6 +1535,54 @@ function App() {
     };
   }, []);
 
+  function upsertLocalSession(session: ChatSession) {
+    setChatSessions((previous) => {
+      const withoutCurrent = previous.filter((item) => item.id !== session.id);
+      return [session, ...withoutCurrent].sort(
+        (left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime(),
+      );
+    });
+  }
+
+  function startNewSession() {
+    const now = new Date().toISOString();
+    const session: ChatSession = {
+      id: createId("session"),
+      title: `${selectedPet.name} 상담`,
+      pet_id: selectedPet.id,
+      message_count: 0,
+      created_at: now,
+      updated_at: now,
+    };
+    upsertLocalSession(session);
+    setActiveSessionId(session.id);
+    setMessages([]);
+    setDraft("");
+    setError(null);
+    if (accessToken) {
+      void saveMyChatSession(accessToken, session).catch(() => {
+        // Local session remains usable when remote persistence is unavailable.
+      });
+    }
+  }
+
+  async function selectChatSession(sessionId: string) {
+    const storageUserId = currentUser?.id ?? GUEST_USER_ID;
+    setActiveSessionId(sessionId);
+    setDraft("");
+    setError(null);
+    const localMessages = loadStoredSessionMessages(storageUserId, sessionId);
+    setMessages(localMessages);
+    if (accessToken) {
+      try {
+        const remoteMessages = await getMySessionMessages(accessToken, sessionId);
+        setMessages(remoteMessages.length ? remoteMessages : localMessages);
+      } catch {
+        setMessages(localMessages);
+      }
+    }
+  }
+
   async function submit(question: string) {
     const trimmed = question.trim();
     if (!trimmed || loading) return;
@@ -1411,7 +1590,21 @@ function App() {
     const contextualQuestion = `${trimmed}\n\n[상담 대상]\n이름: ${selectedPet.name}\n종: ${selectedPet.species}\n품종: ${selectedPet.breed || "미입력"}\n나이: ${selectedPet.age || "미입력"}\n체중: ${selectedPet.weight || "미입력"}\n특이사항: ${selectedPet.note || "없음"}`;
 
     setPageState("chat");
+    const askedAt = new Date().toISOString();
     setMessages((previous) => [...previous, userMessage(trimmed)]);
+    setChatSessions((previous) =>
+      previous.map((session) =>
+        session.id === activeSessionId
+          ? {
+              ...session,
+              title: session.message_count ? session.title : trimmed.slice(0, 80),
+              pet_id: selectedPet.id,
+              message_count: session.message_count + 1,
+              updated_at: askedAt,
+            }
+          : session,
+      ),
+    );
     setDraft("");
     setLoading(true);
     setError(null);
@@ -1419,6 +1612,13 @@ function App() {
     try {
       const response = await askQuestion(contextualQuestion, generationMode);
       setMessages((previous) => [...previous, assistantMessage(response)]);
+      setChatSessions((previous) =>
+        previous.map((session) =>
+          session.id === activeSessionId
+            ? { ...session, message_count: session.message_count + 1, updated_at: new Date().toISOString() }
+            : session,
+        ),
+      );
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "질의 처리 중 오류가 발생했습니다.");
     } finally {
@@ -1457,7 +1657,7 @@ function App() {
       {page === "home" && <LandingPage selectedPet={selectedPet} setPage={setPage} />}
       {page === "dashboard" && <DashboardPage pets={pets} selectedPet={selectedPet} setPage={setPage} setSelectedPetId={setSelectedPetId} />}
       {page === "profile" && <ProfilePage onEdit={openEditProfile} pet={selectedPet} setPage={setPage} />}
-      {page === "register" && <RegisterPetPage initialPet={editingPet} onCancel={() => setPageState("dashboard")} onSave={savePet} />}
+      {page === "register" && <RegisterPetPage currentUser={currentUser} initialPet={editingPet} onCancel={() => setPageState("dashboard")} onSave={savePet} />}
       {page === "chat" && (
         <ChatPage
           apiReady={apiReady}
@@ -1466,12 +1666,12 @@ function App() {
           error={error}
           loading={loading}
           messages={messages}
+          activeSessionId={activeSessionId}
+          chatSessions={chatSessions}
+          onNewSession={startNewSession}
+          onSelectSession={(sessionId) => void selectChatSession(sessionId)}
           selectedPet={selectedPet}
           setDraft={setDraft}
-          setMessages={(nextMessages) => {
-            setMessages(nextMessages);
-            setError(null);
-          }}
           setUseOpenAI={setUseOpenAI}
           sourceCount={sourceCount}
           submit={submit}

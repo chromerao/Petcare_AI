@@ -7,3 +7,5 @@ const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
 export const supabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 
 export const supabase = supabaseConfigured ? createClient(supabaseUrl!, supabaseKey!) : null;
+
+export const petPhotoBucket = (import.meta.env.VITE_SUPABASE_STORAGE_BUCKET as string | undefined) ?? "pet-photos";
