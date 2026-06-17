@@ -403,7 +403,7 @@ function AuthDialog({
 function LandingPage({ selectedPet, setPage }: { selectedPet: PetProfile; setPage: (page: Page, question?: string) => void }) {
   return (
     <main className="flex-grow pt-[88px] pb-xxl bg-surface text-on-surface font-body-md">
-      <section className="relative w-full max-w-container-max mx-auto px-margin-mobile md:px-xl py-lg md:py-xl flex flex-col md:flex-row items-center gap-xl md:min-h-[620px]">
+      <section className="relative w-full max-w-container-max mx-auto px-margin-mobile md:px-xl py-md md:py-lg flex flex-col md:flex-row items-center gap-lg">
         <div className="flex-1 flex flex-col items-start gap-md z-10">
           <div className="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm font-label-sm mb-2">
             <Icon className="text-sm" children="health_and_safety" />
@@ -450,7 +450,7 @@ function LandingPage({ selectedPet, setPage }: { selectedPet: PetProfile; setPag
         </div>
         <div className="flex-1 w-full relative">
           <div className="absolute inset-0 bg-primary-fixed rounded-[2rem] transform rotate-3 scale-105 opacity-50 z-0" />
-          <div className="relative z-10 w-full min-h-[480px] rounded-[2rem] shadow-lg border-4 border-surface bg-gradient-to-br from-primary-fixed via-surface-container-lowest to-secondary-fixed flex items-center justify-center p-xl">
+          <div className="relative z-10 w-full min-h-[320px] md:min-h-[380px] rounded-[2rem] shadow-lg border-4 border-surface bg-gradient-to-br from-primary-fixed via-surface-container-lowest to-secondary-fixed flex items-center justify-center p-lg md:p-xl">
             <div className="bg-surface-container-lowest/90 rounded-[2rem] p-xl shadow-soft max-w-md">
               <PetPhoto className="w-36 h-36 rounded-[2rem] shadow-soft mb-md" pet={selectedPet} />
               <h2 className="text-headline-lg font-headline-lg text-primary mb-sm">{selectedPet.name} 케어 룸</h2>
@@ -462,8 +462,8 @@ function LandingPage({ selectedPet, setPage }: { selectedPet: PetProfile; setPag
         </div>
       </section>
 
-      <section className="max-w-container-max mx-auto px-margin-mobile md:px-xl py-xxl">
-        <div className="text-center mb-xl">
+      <section className="max-w-container-max mx-auto px-margin-mobile md:px-xl py-lg md:py-xl">
+        <div className="text-center mb-lg">
           <h2 className="text-headline-lg font-headline-lg text-primary mb-sm">주요 기능</h2>
           <p className="text-body-lg font-body-lg text-on-surface-variant max-w-2xl mx-auto">
             보기만 좋은 버튼이 아니라 실제로 상담, 등록, 프로필, 대시보드 흐름으로 연결됩니다.
@@ -1164,6 +1164,7 @@ function App() {
     () => loadStoredPets(GUEST_USER_ID)[0]?.id ?? "bella",
   );
   const [editingPetId, setEditingPetId] = useState<string | null>(null);
+  const lastPetsSyncRef = useRef("");
 
   const generationMode: GenerationMode = useOpenAI ? "openai" : "local";
   const assistantMessages = messages.filter((message) => message.role === "assistant");
@@ -1249,6 +1250,28 @@ function App() {
   useEffect(() => {
     const storageUserId = currentUser?.id ?? GUEST_USER_ID;
     saveStoredPets(storageUserId, pets);
+    if (currentUser && accessToken) {
+      const signature = JSON.stringify(
+        pets.map((pet) => [
+          pet.id,
+          pet.name,
+          pet.species,
+          pet.breed,
+          pet.age,
+          pet.weight,
+          pet.status,
+          pet.vet,
+          pet.note,
+          pet.photoUrl,
+        ]),
+      );
+      if (signature !== lastPetsSyncRef.current) {
+        lastPetsSyncRef.current = signature;
+        void Promise.all(pets.map((pet) => saveMyPet(accessToken, pet))).catch((caught) => {
+          console.warn("Pet profile sync failed; local fallback is preserved.", caught);
+        });
+      }
+    }
   }, [currentUser, pets]);
 
   useEffect(() => {
