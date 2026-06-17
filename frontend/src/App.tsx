@@ -402,19 +402,19 @@ function AuthDialog({
 
 function LandingPage({ selectedPet, setPage }: { selectedPet: PetProfile; setPage: (page: Page, question?: string) => void }) {
   return (
-    <main className="flex-grow pt-[88px] pb-xxl bg-surface text-on-surface font-body-md">
-      <section className="relative w-full max-w-container-max mx-auto px-margin-mobile md:px-xl py-md md:py-lg flex flex-col md:flex-row items-center gap-lg">
-        <div className="flex-1 flex flex-col items-start gap-md z-10">
-          <div className="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm font-label-sm mb-2">
+    <main className="flex-grow pt-[76px] pb-lg bg-surface text-on-surface font-body-md">
+      <section className="relative w-full max-w-container-max mx-auto px-margin-mobile md:px-xl py-sm md:py-md flex flex-col md:flex-row items-center gap-md">
+        <div className="flex-1 flex flex-col items-start gap-sm z-10">
+          <div className="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm font-label-sm">
             <Icon className="text-sm" children="health_and_safety" />
             <span>나만의 반려동물 의사 / 전문가</span>
           </div>
-          <h1 className="text-display-lg font-display-lg text-primary max-w-2xl leading-tight">
+          <h1 className="text-[2.25rem] md:text-[3.25rem] font-display-lg text-primary max-w-2xl leading-tight">
             우리 아이의 건강과 생활,
             <br />
             <span className="text-surface-tint">AI가 근거와 함께 안내합니다.</span>
           </h1>
-          <p className="text-body-lg font-body-lg text-on-surface-variant max-w-xl mt-sm mb-lg">
+          <p className="text-body-md md:text-body-lg font-body-lg text-on-surface-variant max-w-xl mb-sm">
             내부 운영 문서, 공신력 있는 외부 자료, 그리고 LLM 조언을 함께 활용해 증상 상담부터 시설 이용, 생활 습관까지 도와주는 반려동물 케어 시스템입니다.
           </p>
           <div className="flex flex-col sm:flex-row gap-sm w-full sm:w-auto">
@@ -443,18 +443,18 @@ function LandingPage({ selectedPet, setPage }: { selectedPet: PetProfile; setPag
               대시보드 보기
             </button>
           </div>
-          <div className="mt-xl flex items-center gap-md text-label-sm font-label-sm text-on-surface-variant">
+          <div className="mt-sm flex items-center gap-md text-label-sm font-label-sm text-on-surface-variant">
             <PetPhoto className="w-10 h-10 rounded-full border-2 border-surface" pet={selectedPet} />
             <span>현재 상담 대상: {selectedPet.name} · {selectedPet.breed || selectedPet.species}</span>
           </div>
         </div>
         <div className="flex-1 w-full relative">
           <div className="absolute inset-0 bg-primary-fixed rounded-[2rem] transform rotate-3 scale-105 opacity-50 z-0" />
-          <div className="relative z-10 w-full min-h-[320px] md:min-h-[380px] rounded-[2rem] shadow-lg border-4 border-surface bg-gradient-to-br from-primary-fixed via-surface-container-lowest to-secondary-fixed flex items-center justify-center p-lg md:p-xl">
-            <div className="bg-surface-container-lowest/90 rounded-[2rem] p-xl shadow-soft max-w-md">
-              <PetPhoto className="w-36 h-36 rounded-[2rem] shadow-soft mb-md" pet={selectedPet} />
+          <div className="relative z-10 w-full min-h-[240px] md:min-h-[300px] rounded-[2rem] shadow-lg border-4 border-surface bg-gradient-to-br from-primary-fixed via-surface-container-lowest to-secondary-fixed flex items-center justify-center p-md">
+            <div className="bg-surface-container-lowest/90 rounded-[2rem] p-lg shadow-soft max-w-md">
+              <PetPhoto className="w-24 h-24 rounded-[1.5rem] shadow-soft mb-sm" pet={selectedPet} />
               <h2 className="text-headline-lg font-headline-lg text-primary mb-sm">{selectedPet.name} 케어 룸</h2>
-              <p className="text-body-md font-body-md text-on-surface-variant">
+              <p className="text-body-md font-body-md text-on-surface-variant line-clamp-3">
                 증상, 식이, 행동, 시설 이용 이슈를 하나의 맥락으로 묶어 상담합니다. 사진을 등록하면 프로필과 상담 화면에 함께 반영됩니다.
               </p>
             </div>
@@ -462,8 +462,8 @@ function LandingPage({ selectedPet, setPage }: { selectedPet: PetProfile; setPag
         </div>
       </section>
 
-      <section className="max-w-container-max mx-auto px-margin-mobile md:px-xl py-lg md:py-xl">
-        <div className="text-center mb-lg">
+      <section className="max-w-container-max mx-auto px-margin-mobile md:px-xl py-md">
+        <div className="text-center mb-md">
           <h2 className="text-headline-lg font-headline-lg text-primary mb-sm">주요 기능</h2>
           <p className="text-body-lg font-body-lg text-on-surface-variant max-w-2xl mx-auto">
             보기만 좋은 버튼이 아니라 실제로 상담, 등록, 프로필, 대시보드 흐름으로 연결됩니다.
@@ -476,12 +476,12 @@ function LandingPage({ selectedPet, setPage }: { selectedPet: PetProfile; setPag
             ["add_photo_alternate", "사진 등록", "기본 귀여운 사진 또는 직접 업로드한 사진을 사용할 수 있습니다.", "register"],
           ].map(([icon, title, desc, page]) => (
             <button
-              className="text-left bg-surface-container-low rounded-[1.5rem] p-lg border border-surface-variant hover:shadow-sm transition-shadow"
+              className="text-left bg-surface-container-low rounded-[1.5rem] p-md border border-surface-variant hover:shadow-sm transition-shadow"
               key={title}
               onClick={() => setPage(page as Page)}
               type="button"
             >
-              <div className="w-12 h-12 bg-primary text-on-primary rounded-xl flex items-center justify-center mb-md shadow-sm">
+              <div className="w-10 h-10 bg-primary text-on-primary rounded-xl flex items-center justify-center mb-sm shadow-sm">
                 <Icon className="text-2xl" children={icon} />
               </div>
               <h3 className="text-headline-md font-headline-md text-primary mb-sm">{title}</h3>
@@ -1165,6 +1165,7 @@ function App() {
   );
   const [editingPetId, setEditingPetId] = useState<string | null>(null);
   const lastPetsSyncRef = useRef("");
+  const remoteHydratedUserRef = useRef<string | null>(null);
 
   const generationMode: GenerationMode = useOpenAI ? "openai" : "local";
   const assistantMessages = messages.filter((message) => message.role === "assistant");
@@ -1250,7 +1251,7 @@ function App() {
   useEffect(() => {
     const storageUserId = currentUser?.id ?? GUEST_USER_ID;
     saveStoredPets(storageUserId, pets);
-    if (currentUser && accessToken) {
+    if (currentUser && accessToken && remoteHydratedUserRef.current === currentUser.id) {
       const signature = JSON.stringify(
         pets.map((pet) => [
           pet.id,
@@ -1277,7 +1278,7 @@ function App() {
   useEffect(() => {
     const storageUserId = currentUser?.id ?? GUEST_USER_ID;
     saveStoredMessages(storageUserId, messages);
-    if (currentUser && accessToken) {
+    if (currentUser && accessToken && remoteHydratedUserRef.current === currentUser.id) {
       void saveMyMessages(accessToken, selectedPet.id, messages).catch(() => {
         // Keep local fallback data even if remote sync is temporarily unavailable.
       });
@@ -1297,7 +1298,14 @@ function App() {
         email,
         name: session.user.user_metadata?.name || email.split("@")[0] || "보호자",
       };
+      const localPets = loadStoredPets(user.id);
+      const localMessages = loadStoredMessages(user.id);
+      remoteHydratedUserRef.current = null;
+      lastPetsSyncRef.current = "";
       saveCurrentUser(user);
+      setPets(localPets);
+      setMessages(localMessages);
+      setSelectedPetId(localPets[0]?.id ?? "bella");
       setCurrentUser(user);
       setAccessToken(session.access_token);
       setAuthMode(null);
@@ -1314,6 +1322,8 @@ function App() {
         saveCurrentUser(null);
         setCurrentUser(null);
         setAccessToken(null);
+        remoteHydratedUserRef.current = null;
+        lastPetsSyncRef.current = "";
       }
     });
 
@@ -1340,6 +1350,8 @@ function App() {
         setPets(nextPets);
         setMessages(nextMessages);
         setSelectedPetId(nextPets[0]?.id ?? "bella");
+        remoteHydratedUserRef.current = userId;
+        lastPetsSyncRef.current = "";
         setError(null);
       } catch (caught) {
         if (!cancelled) {
@@ -1347,6 +1359,8 @@ function App() {
           setPets(fallbackPets);
           setMessages(loadStoredMessages(userId));
           setSelectedPetId(fallbackPets[0]?.id ?? "bella");
+          remoteHydratedUserRef.current = userId;
+          lastPetsSyncRef.current = "";
           console.warn("User data sync failed; using local fallback.", caught);
         }
       }

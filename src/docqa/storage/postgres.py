@@ -13,7 +13,7 @@ from docqa.core.config import Settings
 
 SCHEMA_SQL = """
 create table if not exists pets (
-    id text primary key,
+    id text not null,
     user_id text not null,
     name text not null,
     species text not null default '',
@@ -27,6 +27,9 @@ create table if not exists pets (
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
+
+alter table pets drop constraint if exists pets_pkey;
+alter table pets add constraint pets_user_id_id_key unique (user_id, id);
 
 create index if not exists pets_user_id_idx on pets(user_id);
 
@@ -85,7 +88,7 @@ class UserStore:
                     note, photo_url, created_at, updated_at
                 )
                 values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                on conflict (id) do update set
+                on conflict (user_id, id) do update set
                     name = excluded.name,
                     species = excluded.species,
                     breed = excluded.breed,
@@ -96,7 +99,6 @@ class UserStore:
                     note = excluded.note,
                     photo_url = excluded.photo_url,
                     updated_at = excluded.updated_at
-                where pets.user_id = excluded.user_id
                 returning id, name, species, breed, age, weight, status, vet, note,
                           photo_url as "photoUrl"
                 """,
