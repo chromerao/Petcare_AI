@@ -1273,7 +1273,7 @@ function App() {
         });
       }
     }
-  }, [currentUser, pets]);
+  }, [accessToken, currentUser, pets]);
 
   useEffect(() => {
     const storageUserId = currentUser?.id ?? GUEST_USER_ID;
