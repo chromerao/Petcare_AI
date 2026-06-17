@@ -146,6 +146,15 @@ PET_CONTEXT_TERMS = (
 DENIED_REALTIME_TERMS = ("빈방", "몇개", "몇 개", "실시간예약", "예약 가능")
 DENIED_DOSAGE_TERMS = ("mg", "용량", "몇알", "몇 알", "먹여도", "복용량")
 
+DENIED_UNGROUNDED_STANDARD_TERMS = (
+    "염소농도",
+    "염소 농도",
+    "수영장염소",
+    "수영장 염소",
+    "chlorinelevel",
+    "chlorine level",
+)
+
 
 class QueryService:
     def __init__(
@@ -161,6 +170,10 @@ class QueryService:
         has_pet_context = "[상담 대상]" in question
         request_id = str(uuid4())
 
+        compact_user_question = user_question.lower().replace(" ", "")
+        is_ungrounded_standard = any(
+            term in compact_user_question for term in DENIED_UNGROUNDED_STANDARD_TERMS
+        )
         guardrail_answer = self._guardrail_answer(user_question)
         if guardrail_answer is not None:
             return QueryResponse(
@@ -168,9 +181,9 @@ class QueryService:
                 citations=[],
                 grounded=False,
                 request_id=request_id,
-                generation_mode="safety",
+                generation_mode=generation_mode if is_ungrounded_standard else "safety",
                 retrieval_confidence=0.0,
-                answer_type="safety",
+                answer_type="no_evidence" if is_ungrounded_standard else "safety",
                 safety_notice="진단, 처방, 실시간 예약 정보는 별도 확인이 필요합니다.",
             )
 
@@ -344,5 +357,12 @@ class QueryService:
             return (
                 "현재 지식베이스에는 실시간 객실, 예약, 빈방 데이터가 연결되어 있지 않습니다. "
                 "시설 예약 시스템 또는 담당 운영자에게 확인해 주세요."
+            )
+        if any(term in compact for term in DENIED_UNGROUNDED_STANDARD_TERMS):
+            return (
+                "현재 등록된 문서 자료에는 해당 시설 기준 수치나 농도를 판단할 "
+                "충분한 근거가 없습니다. 수영장, 소독제, 수질 기준처럼 구체적인 "
+                "수치가 필요한 질문은 제품 라벨, 시설 운영 기준, 관할 지침 또는 "
+                "수의사 확인이 필요합니다."
             )
         return None

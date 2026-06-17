@@ -71,3 +71,45 @@ def test_retriever_finds_vet_visit_preparation_document() -> None:
 
     assert results
     assert results[0].document_id == "care.10_vet_visit_preparation"
+
+
+def test_retriever_finds_toxic_food_document() -> None:
+    retriever = LocalKeywordRetriever()
+    context = SearchContext(
+        user_id="test-user",
+        tenant_id="test-tenant",
+        allowed_acl=("public",),
+    )
+
+    results = retriever.search("dog ate xylitol chocolate grapes", context, limit=3)
+
+    assert results
+    assert results[0].document_id == "care.11_aspca_toxic_foods"
+
+
+def test_retriever_finds_pet_travel_safety_document() -> None:
+    retriever = LocalKeywordRetriever()
+    context = SearchContext(
+        user_id="test-user",
+        tenant_id="test-tenant",
+        allowed_acl=("public",),
+    )
+
+    results = retriever.search("pet travel car airplane vaccination documents", context, limit=3)
+
+    assert results
+    assert results[0].document_id == "care.15_cdc_pet_travel_safety"
+
+
+def test_retriever_finds_cat_urinary_obstruction_document() -> None:
+    retriever = LocalKeywordRetriever()
+    context = SearchContext(
+        user_id="test-user",
+        tenant_id="test-tenant",
+        allowed_acl=("public",),
+    )
+
+    results = retriever.search("cat cannot pee urinary obstruction emergency", context, limit=3)
+
+    assert results
+    assert results[0].document_id == "care.16_cornell_cat_urinary_obstruction"
